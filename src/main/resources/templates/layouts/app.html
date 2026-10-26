@@ -22,6 +22,16 @@
         </aside>
 
         <div class="u-min-width-0">
+            <div th:if="${sandboxMode}"
+                class="environment-banner"
+                role="status"
+                aria-label="Sandbox environment">
+                <strong>SANDBOX MODE</strong>
+                <span>
+                    You're currently on SANDBOX. All balances and transactions are
+                    simulated. No real money is moved.
+                </span>
+            </div>
             <main class="main-content">
                 <div th:replace="${content}">
                     Page content
