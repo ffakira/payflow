@@ -203,7 +203,7 @@ BEGIN
             ) <> 0
     ) THEN
         RAISE EXCEPTION
-            'Ledger transaction %s is unbalanced per currency',
+            'Ledger transaction % is unbalanced per currency',
             target_transaction_id;
     END IF;
 

@@ -171,6 +171,24 @@ class LedgerDatabaseConstraintsIntegrationTest {
         );
     }
 
+    @Test
+    void rejectsInsertingEntryIntoCommittedLedgerTransaction() {
+        UUID debitAccount = createAccount("BRL");
+        UUID creditAccount = createAccount("BRL");
+        UUID transactionId = createBalancedTransaction(debitAccount, creditAccount);
+
+        UUID thirdAccount = createAccount("BRL");
+
+        assertThrows(DataAccessException.class, () ->
+            insertEntry(
+                transactionId,
+                thirdAccount,
+                "DEBIT",
+                1_000
+            )
+        );
+    }
+
     private UUID createAccount(String currencyCode) {
         UUID holderId = UUID.randomUUID();
         UUID accountId = UUID.randomUUID();
