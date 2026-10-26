@@ -269,6 +269,12 @@ public class PostLedgerTransactionServiceTest {
                 .filter(account -> account.id().equals(id))
                 .findFirst();
         }
+
+        @Override
+        public Optional<Account> findByIdForUpdate(AccountId id) {
+            // in-memory test double: no database row locking is required
+            return findById(id);
+        }
     }
 
     private static final class InMemoryLedgerTransactionRepository implements LedgerTransactionRepository {

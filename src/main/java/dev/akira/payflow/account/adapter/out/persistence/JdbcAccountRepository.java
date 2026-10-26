@@ -48,6 +48,20 @@ public class JdbcAccountRepository implements AccountRepository {
         WHERE id = ?
     """;
 
+    private static final String FIND_BY_ID_FOR_UPDATE_SQL = """
+        SELECT
+            id,
+            holder_id,
+            account_number,
+            account_type,
+            currency_code,
+            status,
+            created_at
+        FROM accounts
+        WHERE id = ?
+        FOR UPDATE
+    """;
+
     private final JdbcTemplate jdbcTemplate;
 
     public JdbcAccountRepository(JdbcTemplate jdbcTemplate) {
@@ -83,6 +97,23 @@ public class JdbcAccountRepository implements AccountRepository {
             return Optional.ofNullable(
                 jdbcTemplate.queryForObject(
                     FIND_BY_ID_SQL,
+                    (rs, rowNum) -> mapAccount(rs),
+                    id.value()
+                )
+            );
+        } catch (EmptyResultDataAccessException exception) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Account> findByIdForUpdate(AccountId id) {
+        Objects.requireNonNull(id, "Account ID must not be null");
+
+        try {
+            return Optional.ofNullable(
+                jdbcTemplate.queryForObject(
+                    FIND_BY_ID_FOR_UPDATE_SQL,
                     (rs, rowNum) -> mapAccount(rs),
                     id.value()
                 )

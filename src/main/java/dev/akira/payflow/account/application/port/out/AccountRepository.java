@@ -10,4 +10,6 @@ public interface AccountRepository {
     Account save(Account account);
 
     Optional<Account> findById(AccountId id);
+
+    Optional<Account> findByIdForUpdate(AccountId id);
 }
