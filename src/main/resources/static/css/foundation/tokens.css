@@ -1,0 +1,259 @@
+/* Design tokens and theme definitions */
+
+@layer tokens {
+  :root {
+    color-scheme: light;
+
+    /* Typography */
+    --font-sans:
+      Inter,
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+
+    --font-mono:
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Consolas,
+      monospace;
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.875rem;
+    --text-3xl: 2.25rem;
+    --text-4xl: 2.75rem;
+
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.7;
+
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Brand */
+    --color-brand: #3157d5;
+    --color-brand-hover: #2546b8;
+    --color-brand-soft: #edf1ff;
+    --color-brand-border: #c9d4ff;
+    --color-brand-on: #ffffff;
+
+    /* Page and surfaces */
+    --color-page: #f5f7fb;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f8f9fc;
+    --color-surface-raised: #ffffff;
+    --color-surface-hover: #f0f3f9;
+    --color-surface-active: #e8edf7;
+
+    /* Borders */
+    --color-border: #e3e7ef;
+    --color-border-strong: #cbd3e1;
+
+    /* Text */
+    --color-text: #172033;
+    --color-text-muted: #667085;
+    --color-text-subtle: #98a2b3;
+    --color-text-inverse: #ffffff;
+
+    /* Semantic states */
+    --color-success: #16845b;
+    --color-success-bg: #e8f7ef;
+    --color-success-border: #b8e8cf;
+
+    --color-danger: #c43d4b;
+    --color-danger-bg: #fff0f1;
+    --color-danger-border: #f3c4c9;
+
+    --color-warning: #a86412;
+    --color-warning-bg: #fff5e5;
+    --color-warning-border: #f1d7a7;
+
+    --color-info: #2865bd;
+    --color-info-bg: #edf5ff;
+    --color-info-border: #c7ddff;
+
+    /* Focus and overlays */
+    --color-focus-ring: #6d8aff;
+    --color-overlay: rgb(15 23 42 / 45%);
+
+    /* Spacing scale */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+
+    /* Radius */
+    --radius-xs: 0.25rem;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+    --radius-pill: 999px;
+
+    /* Borders and shadows */
+    --border-width: 1px;
+
+    --shadow-card:
+      0 1px 3px rgb(23 32 51 / 5%);
+
+    --shadow-card-hover:
+      0 8px 24px rgb(23 32 51 / 8%);
+
+    --shadow-popover:
+      0 12px 32px rgb(23 32 51 / 12%);
+
+    /* Layout */
+    --content-max: 1440px;
+    --content-reading-max: 760px;
+    --sidebar-width: 248px;
+    --header-height: 72px;
+
+    /* Motion */
+    --duration-fast: 150ms;
+    --duration-normal: 220ms;
+    --duration-slow: 320ms;
+
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+    /* Layers */
+    --z-base: 0;
+    --z-sticky: 10;
+    --z-dropdown: 20;
+    --z-overlay: 30;
+    --z-modal: 40;
+    --z-toast: 50;
+  }
+
+  /* Explicit light theme */
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  /* Dark theme */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --color-brand: #8ba6ff;
+    --color-brand-hover: #a6baff;
+    --color-brand-soft: #26365f;
+    --color-brand-border: #40558e;
+    --color-brand-on: #101827;
+
+    --color-page: #0c111b;
+    --color-surface: #151d2b;
+    --color-surface-muted: #1b2535;
+    --color-surface-raised: #202b3d;
+    --color-surface-hover: #263349;
+    --color-surface-active: #30405a;
+
+    --color-border: #2c394d;
+    --color-border-strong: #43516a;
+
+    --color-text: #edf2fb;
+    --color-text-muted: #a5b1c5;
+    --color-text-subtle: #8290a7;
+    --color-text-inverse: #101827;
+
+    --color-success: #55d6a0;
+    --color-success-bg: #17392f;
+    --color-success-border: #285e4b;
+
+    --color-danger: #ff8993;
+    --color-danger-bg: #42252e;
+    --color-danger-border: #713b47;
+
+    --color-warning: #f5bd69;
+    --color-warning-bg: #403321;
+    --color-warning-border: #6b512b;
+
+    --color-info: #8dbbff;
+    --color-info-bg: #1b304d;
+    --color-info-border: #304f78;
+
+    --color-focus-ring: #a6baff;
+    --color-overlay: rgb(0 0 0 / 65%);
+
+    --shadow-card:
+      0 1px 3px rgb(0 0 0 / 20%);
+
+    --shadow-card-hover:
+      0 8px 24px rgb(0 0 0 / 25%);
+
+    --shadow-popover:
+      0 16px 40px rgb(0 0 0 / 35%);
+  }
+
+  /* System theme follows the operating system */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]),
+    :root[data-theme="system"] {
+      color-scheme: dark;
+
+      --color-brand: #8ba6ff;
+      --color-brand-hover: #a6baff;
+      --color-brand-soft: #26365f;
+      --color-brand-border: #40558e;
+      --color-brand-on: #101827;
+
+      --color-page: #0c111b;
+      --color-surface: #151d2b;
+      --color-surface-muted: #1b2535;
+      --color-surface-raised: #202b3d;
+      --color-surface-hover: #263349;
+      --color-surface-active: #30405a;
+
+      --color-border: #2c394d;
+      --color-border-strong: #43516a;
+
+      --color-text: #edf2fb;
+      --color-text-muted: #a5b1c5;
+      --color-text-subtle: #8290a7;
+      --color-text-inverse: #101827;
+
+      --color-success: #55d6a0;
+      --color-success-bg: #17392f;
+      --color-success-border: #285e4b;
+
+      --color-danger: #ff8993;
+      --color-danger-bg: #42252e;
+      --color-danger-border: #713b47;
+
+      --color-warning: #f5bd69;
+      --color-warning-bg: #403321;
+      --color-warning-border: #6b512b;
+
+      --color-info: #8dbbff;
+      --color-info-bg: #1b304d;
+      --color-info-border: #304f78;
+
+      --color-focus-ring: #a6baff;
+      --color-overlay: rgb(0 0 0 / 65%);
+
+      --shadow-card:
+        0 1px 3px rgb(0 0 0 / 20%);
+
+      --shadow-card-hover:
+        0 8px 24px rgb(0 0 0 / 25%);
+
+      --shadow-popover:
+        0 16px 40px rgb(0 0 0 / 35%);
+    }
+  }
+}

@@ -1,0 +1,132 @@
+/* Page and application layouts */
+
+@layer layout {
+  .page-shell {
+    width: min(calc(100% - 2rem), var(--content-max));
+    margin-inline: auto;
+  }
+
+  .page-content {
+    min-inline-size: 0;
+    padding-block: var(--space-8);
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-block-end: var(--space-8);
+  }
+
+  .page-header__content {
+    display: grid;
+    gap: var(--space-2);
+    min-inline-size: 0;
+  }
+
+  .page-header__description {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .section {
+    margin-block-end: var(--space-8);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block-end: var(--space-4);
+  }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .cluster {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .sidebar-layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    min-block-size: 100vh;
+    min-block-size: 100dvh;
+  }
+
+  .main-content {
+    min-inline-size: 0;
+    padding: var(--space-8);
+  }
+
+  @media (max-width: 900px) {
+    .dashboard-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sidebar-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .main-content {
+      padding: var(--space-6);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .page-shell {
+      width: min(calc(100% - 1.5rem), var(--content-max));
+    }
+
+    .page-content {
+      padding-block: var(--space-6);
+    }
+
+    .main-content {
+      padding: var(--space-4);
+    }
+
+    .metrics-grid,
+    .content-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .page-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .section-header {
+      align-items: flex-start;
+    }
+  }
+}
