@@ -1,4 +1,3 @@
-
 package dev.akira.payflow.account.domain;
 
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
@@ -17,26 +16,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AccountTest {
 
     private static final AccountId ACCOUNT_ID =
-            new AccountId(UUID.fromString(
-                    "00000000-0000-0000-0000-000000000001"
-            ));
+        new AccountId(UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+        ));
 
     private static final AccountHolderId HOLDER_ID =
-            new AccountHolderId(UUID.fromString(
-                    "00000000-0000-0000-0000-000000000002"
-            ));
+        new AccountHolderId(UUID.fromString(
+            "00000000-0000-0000-0000-000000000002"
+        ));
 
     private static final Instant CREATED_AT =
-            Instant.parse("2026-01-01T00:00:00Z");
+        Instant.parse("2026-01-01T00:00:00Z");
 
     private Account openAccount() {
         return Account.open(
-                ACCOUNT_ID,
-                HOLDER_ID,
-                "PF000000000001",
-                AccountType.CUSTOMER,
-                CurrencyCode.of("BRL"),
-                CREATED_AT
+            ACCOUNT_ID,
+            HOLDER_ID,
+            "PF000000000001",
+            AccountType.CUSTOMER,
+            CurrencyCode.of("BRL"),
+            CREATED_AT
         );
     }
 
@@ -52,6 +51,8 @@ class AccountTest {
         assertEquals(AccountStatus.ACTIVE, account.status());
         assertEquals(CREATED_AT, account.createdAt());
         assertTrue(account.isActive());
+        assertFalse(account.isSuspended());
+        assertFalse(account.isClosed());
     }
 
     @Test
@@ -61,9 +62,10 @@ class AccountTest {
         Account suspended = account.suspend();
 
         assertEquals(AccountStatus.SUSPENDED, suspended.status());
+        assertTrue(suspended.isSuspended());
         assertFalse(suspended.isActive());
 
-        // The original instance remains unchanged.
+        // The original immutable instance remains unchanged.
         assertEquals(AccountStatus.ACTIVE, account.status());
     }
 
@@ -72,8 +74,31 @@ class AccountTest {
         Account suspended = openAccount().suspend();
 
         assertThrows(
-                IllegalStateException.class,
-                suspended::suspend
+            IllegalStateException.class,
+            suspended::suspend
+        );
+    }
+
+    @Test
+    void reactivatesSuspendedAccount() {
+        Account suspended = openAccount().suspend();
+
+        Account reactivated = suspended.reactivate();
+
+        assertEquals(AccountStatus.ACTIVE, reactivated.status());
+        assertTrue(reactivated.isActive());
+
+        // The original instance remains suspended.
+        assertEquals(AccountStatus.SUSPENDED, suspended.status());
+    }
+
+    @Test
+    void cannotReactivateAnActiveAccount() {
+        Account active = openAccount();
+
+        assertThrows(
+            IllegalStateException.class,
+            active::reactivate
         );
     }
 
@@ -82,14 +107,15 @@ class AccountTest {
         Account closed = openAccount().close();
 
         assertEquals(AccountStatus.CLOSED, closed.status());
+        assertTrue(closed.isClosed());
         assertFalse(closed.isActive());
     }
 
     @Test
     void closesSuspendedAccount() {
         Account closed = openAccount()
-                .suspend()
-                .close();
+            .suspend()
+            .close();
 
         assertEquals(AccountStatus.CLOSED, closed.status());
     }
@@ -99,23 +125,43 @@ class AccountTest {
         Account closed = openAccount().close();
 
         assertThrows(
-                IllegalStateException.class,
-                closed::close
+            IllegalStateException.class,
+            closed::close
+        );
+    }
+
+    @Test
+    void cannotSuspendAClosedAccount() {
+        Account closed = openAccount().close();
+
+        assertThrows(
+            IllegalStateException.class,
+            closed::suspend
+        );
+    }
+
+    @Test
+    void cannotReactivateAClosedAccount() {
+        Account closed = openAccount().close();
+
+        assertThrows(
+            IllegalStateException.class,
+            closed::reactivate
         );
     }
 
     @Test
     void rejectsBlankAccountNumber() {
         assertThrows(
-                IllegalArgumentException.class,
-                () -> Account.open(
-                        ACCOUNT_ID,
-                        HOLDER_ID,
-                        " ",
-                        AccountType.CUSTOMER,
-                        CurrencyCode.of("BRL"),
-                        CREATED_AT
-                )
+            IllegalArgumentException.class,
+            () -> Account.open(
+                ACCOUNT_ID,
+                HOLDER_ID,
+                " ",
+                AccountType.CUSTOMER,
+                CurrencyCode.of("BRL"),
+                CREATED_AT
+            )
         );
     }
 
@@ -124,30 +170,30 @@ class AccountTest {
         String accountNumber = "A".repeat(35);
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> Account.open(
-                        ACCOUNT_ID,
-                        HOLDER_ID,
-                        accountNumber,
-                        AccountType.CUSTOMER,
-                        CurrencyCode.of("BRL"),
-                        CREATED_AT
-                )
+            IllegalArgumentException.class,
+            () -> Account.open(
+                ACCOUNT_ID,
+                HOLDER_ID,
+                accountNumber,
+                AccountType.CUSTOMER,
+                CurrencyCode.of("BRL"),
+                CREATED_AT
+            )
         );
     }
 
     @Test
     void rejectsNullCurrency() {
         assertThrows(
-                NullPointerException.class,
-                () -> Account.open(
-                        ACCOUNT_ID,
-                        HOLDER_ID,
-                        "PF000000000001",
-                        AccountType.CUSTOMER,
-                        null,
-                        CREATED_AT
-                )
+            NullPointerException.class,
+            () -> Account.open(
+                ACCOUNT_ID,
+                HOLDER_ID,
+                "PF000000000001",
+                AccountType.CUSTOMER,
+                null,
+                CREATED_AT
+            )
         );
     }
 }
