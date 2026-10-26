@@ -1,13 +1,9 @@
 
-package dev.akira.payflow.account.application;
+package dev.akira.payflow.account.application.service;
 
 import dev.akira.payflow.account.application.port.out.AccountHolderRepository;
 import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.application.port.out.CurrencyRepository;
-import dev.akira.payflow.account.application.service.OpenAccountCommand;
-import dev.akira.payflow.account.application.service.OpenAccountResult;
-import dev.akira.payflow.account.application.service.OpenAccountService;
-import dev.akira.payflow.account.application.service.RandomAccountNumberGenerator;
 import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountId;
 import dev.akira.payflow.account.domain.AccountStatus;
