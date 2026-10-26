@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/app :: layout(~{::content}, 'Page not found', 'error')}">
+
+<body>
+    <th:block th:fragment="content">
+        <section class="empty-state" aria-labelledby="error-title">
+            <p class="u-text-muted u-text-xs">ERROR 404</p>
+
+            <h1 id="error-title" class="empty-state__title">
+                Page not found
+            </h1>
+
+            <p class="empty-state__description">
+                The page you're looking for doesn't exist or may have been moved.
+                Check the address or return to your dashboard.
+            </p>
+
+            <div class="cluster u-mt-4">
+                <a class="button button--primary" th:href="@{/}">
+                    Back to dashboard
+                </a>
+                <button class="button button--secondary"
+                        type="button"
+                        onclick="window.history.back()">
+                    Go back
+                </button>
+            </div>
+        </section>
+    </th:block>
+</body>
+</html>

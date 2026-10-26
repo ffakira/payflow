@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <nav th:fragment="sidebar(activePage)" aria-label="Main navigation">
+        <a class="sidebar__brand"
+           th:href="@{/}"
+           aria-label="PayFlow home">
+            PayFlow
+        </a>
+
+        <p class="u-text-xs u-text-muted u-mb-2">WORKSPACE</p>
+
+        <ul class="nav-list">
+            <li>
+                <a class="nav-link"
+                   th:href="@{/}"
+                   th:classappend="${activePage == 'dashboard'} ? ' nav-link--active' : ''"
+                   th:attr="aria-current=${activePage == 'dashboard'} ? 'page' : null">
+                    Overview
+                </a>
+            </li>
+            <li>
+                <a class="nav-link"
+                   th:href="@{/accounts}"
+                   th:classappend="${activePage == 'accounts'} ? ' nav-link--active' : ''"
+                   th:attr="aria-current=${activePage == 'accounts'} ? 'page' : null">
+                    Accounts
+                </a>
+            </li>
+            <li>
+                <a class="nav-link"
+                   th:href="@{/transfers}"
+                   th:classappend="${activePage == 'transfers'} ? ' nav-link--active' : ''"
+                   th:attr="aria-current=${activePage == 'transfers'} ? 'page' : null">
+                    Transfers
+                </a>
+            </li>
+            <li>
+                <a class="nav-link"
+                   th:href="@{/exchange}"
+                   th:classappend="${activePage == 'exchange'} ? ' nav-link--active' : ''"
+                   th:attr="aria-current=${activePage == 'exchange'} ? 'page' : null">
+                    Currency exchange
+                </a>
+            </li>
+            <li>
+                <a class="nav-link"
+                   th:href="@{/transactions}"
+                   th:classappend="${activePage == 'transactions'} ? ' nav-link--active' : ''"
+                   th:attr="aria-current=${activePage == 'transactions'} ? 'page' : null">
+                    Transactions
+                </a>
+            </li>
+        </ul>
+    </nav>
+</body>
+</html>

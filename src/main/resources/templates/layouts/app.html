@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(content, pageTitle, activePage)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle} + ' | PayFlow'">PayFlow</title>
+
+    <meta name="theme-color" content="#f5f7fb">
+
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/js/lib/htmx.min.js}" defer></script>
+</head>
+<body>
+    <div class="sidebar-layout">
+        <aside class="sidebar">
+            <div th:replace="~{fragments/sidebar :: sidebar(${activePage})}">
+                Sidebar
+            </div>
+        </aside>
+
+        <div class="u-min-width-0">
+            <main class="main-content">
+                <div th:replace="${content}">
+                    Page content
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

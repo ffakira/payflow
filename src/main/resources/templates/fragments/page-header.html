@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <header th:fragment="pageHeader(title, description)"
+            class="page-header">
+        <div class="page-header__content">
+            <h1 th:text="${title}">Dashboard</h1>
+            <p class="page-header__description"
+               th:text="${description}">
+                Your financial overview
+            </p>
+        </div>
+    </header>
+</body>
+</html>
