@@ -12,6 +12,8 @@ import dev.akira.payflow.account.domain.holder.AccountHolder;
 import dev.akira.payflow.account.domain.holder.AccountHolderStatus;
 import dev.akira.payflow.account.domain.holder.AccountHolderType;
 import dev.akira.payflow.common.domain.money.CurrencyCode;
+import dev.akira.payflow.common.error.BusinessException;
+import dev.akira.payflow.common.error.ErrorCode;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,11 +106,12 @@ class OpenAccountServiceTest {
                 CurrencyCode.of("BRL")
         );
 
-        assertThrows(
-                IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+                BusinessException.class,
                 () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.DISPLAY_NAME_REQUIRED, exception.errorCode());
         assertTrue(holderRepository.saved.isEmpty());
         assertTrue(accountRepository.saved.isEmpty());
     }
@@ -123,11 +126,12 @@ class OpenAccountServiceTest {
             CurrencyCode.of("BRL")
         );
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.CURRENCY_NOT_ENABLED, exception.errorCode());
         assertTrue(holderRepository.saved.isEmpty());
         assertTrue(accountRepository.saved.isEmpty());
     }

@@ -16,6 +16,8 @@ import dev.akira.payflow.account.domain.AccountType;
 import dev.akira.payflow.account.domain.holder.AccountHolder;
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
 import dev.akira.payflow.account.domain.holder.AccountHolderStatus;
+import dev.akira.payflow.common.error.BusinessException;
+import dev.akira.payflow.common.error.ErrorCode;
 
 @Service
 public class OpenAccountService {
@@ -47,13 +49,17 @@ public class OpenAccountService {
         Objects.requireNonNull(command.currency(), "Currency cannot be null");
 
         if (!currencyRepository.isEnabled(command.currency())) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                ErrorCode.CURRENCY_NOT_ENABLED,
                 "Currency is not enabled: " + command.currency()
             );
         }
 
         if (command.displayName() == null || command.displayName().isBlank()) {
-            throw new IllegalArgumentException("Display name cannot be blank");
+            throw new BusinessException(
+                ErrorCode.DISPLAY_NAME_REQUIRED,
+                "Display name cannot be blank"
+            );
         }
 
         AccountHolderId holderId = AccountHolderId.generate();
