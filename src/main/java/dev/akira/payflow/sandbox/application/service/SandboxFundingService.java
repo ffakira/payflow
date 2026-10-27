@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountType;
+import dev.akira.payflow.common.error.BusinessException;
+import dev.akira.payflow.common.error.ErrorCode;
 import dev.akira.payflow.config.PayflowProperties;
 import dev.akira.payflow.ledger.application.service.PostLedgerTransactionCommand;
 import dev.akira.payflow.ledger.application.service.PostLedgerTransactionService;
@@ -19,9 +21,9 @@ import dev.akira.payflow.ledger.domain.LedgerTransactionType;
 import dev.akira.payflow.sandbox.application.port.in.FundSandboxAccountUseCase;
 import dev.akira.payflow.sandbox.application.port.out.SandboxClearingAccountProvider;
 
-@Service 
+@Service
 public class SandboxFundingService implements FundSandboxAccountUseCase {
-    
+
     private final PayflowProperties properties;
     private final AccountRepository accountRepository;
     private final SandboxClearingAccountProvider clearingAccountProvider;
@@ -46,32 +48,40 @@ public class SandboxFundingService implements FundSandboxAccountUseCase {
 
         if (!properties.isSandbox()) {
             throw new IllegalStateException(
-                "Sandbox funding is disabled outside sandbox mode");
+                "Sandbox funding is disabled outside sandbox mode"
+            );
         }
 
         Account customerAccount = accountRepository
-            .findById(command.accountId())
-            .orElseThrow(() -> new IllegalArgumentException(
-                "Customer account not found: "
-                    + command.accountId().value()));
+                .findById(command.accountId())
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCode.ACCOUNT_NOT_FOUND,
+                    "Customer account not found: " + command.accountId().value()
+                ));
 
         if (customerAccount.type() != AccountType.CUSTOMER) {
-            throw new IllegalArgumentException(
-                "Only customer accounts can be funded");
+            throw new BusinessException(
+                ErrorCode.ACCOUNT_TYPE_NOT_ALLOWED,
+                "Only customer accounts can be funded"
+            );
         }
 
         if (!customerAccount.isActive()) {
-            throw new IllegalArgumentException(
-                "Customer account is not active");
+            throw new BusinessException(
+                ErrorCode.ACCOUNT_NOT_ACTIVE,
+                "Customer account is not active"
+            );
         }
 
         if (!customerAccount.currency().equals(command.amountMinor().currency())) {
-            throw new IllegalArgumentException(
-                "Funding currency must match the account currency");
+            throw new BusinessException(
+                ErrorCode.CURRENCY_MISMATCH,
+                "Funding currency must match the account currency"
+            );
         }
 
         Account clearingAccount = clearingAccountProvider.getForCurrency(
-            customerAccount.currency());
+                customerAccount.currency());
 
         if (clearingAccount == null
                 || clearingAccount.type() != AccountType.CLEARING
@@ -81,7 +91,8 @@ public class SandboxFundingService implements FundSandboxAccountUseCase {
         }
 
         if (!clearingAccount.isActive()) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                ErrorCode.ACCOUNT_NOT_ACTIVE,
                 "Clearing account is not active"
             );
         }
@@ -104,7 +115,8 @@ public class SandboxFundingService implements FundSandboxAccountUseCase {
             "SANDBOX_FUNDING",
             null,
             null,
-            entries);
+            entries
+        );
 
         return ledgerService.execute(ledgerCommand);
     }

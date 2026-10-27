@@ -28,6 +28,8 @@ import dev.akira.payflow.account.domain.AccountType;
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
 import dev.akira.payflow.common.domain.money.CurrencyCode;
 import dev.akira.payflow.common.domain.money.Money;
+import dev.akira.payflow.common.error.BusinessException;
+import dev.akira.payflow.common.error.ErrorCode;
 import dev.akira.payflow.config.PayflowProperties;
 import dev.akira.payflow.ledger.application.service.PostLedgerTransactionCommand;
 import dev.akira.payflow.ledger.application.service.PostLedgerTransactionService;
@@ -162,11 +164,12 @@ class SandboxFundingServiceTest {
         when(accountRepository.findById(customerAccount.id()))
             .thenReturn(Optional.empty());
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.ACCOUNT_NOT_FOUND, exception.errorCode());
         verify(ledgerService, never()).execute(any());
     }
 
@@ -186,11 +189,12 @@ class SandboxFundingServiceTest {
         when(accountRepository.findById(feeAccount.id()))
             .thenReturn(Optional.of(feeAccount));
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.ACCOUNT_TYPE_NOT_ALLOWED, exception.errorCode());
         verify(ledgerService, never()).execute(any());
     }
 
@@ -210,11 +214,12 @@ class SandboxFundingServiceTest {
         when(accountRepository.findById(inactiveAccount.id()))
             .thenReturn(Optional.of(inactiveAccount));
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.ACCOUNT_NOT_ACTIVE, exception.errorCode());
         verify(ledgerService, never()).execute(any());
     }
 
@@ -233,11 +238,12 @@ class SandboxFundingServiceTest {
         when(accountRepository.findById(customerAccount.id()))
             .thenReturn(Optional.of(customerAccount));
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.CURRENCY_MISMATCH, exception.errorCode());
         verify(clearingAccountProvider, never()).getForCurrency(any());
         verify(ledgerService, never()).execute(any());
     }
@@ -260,8 +266,35 @@ class SandboxFundingServiceTest {
         when(clearingAccountProvider.getForCurrency(amount.currency()))
             .thenReturn(inactiveClearingAccount);
 
+        BusinessException exception = assertThrows(
+            BusinessException.class,
+            () -> service.execute(command)
+        );
+
+        assertEquals(ErrorCode.ACCOUNT_NOT_ACTIVE, exception.errorCode());
+        verify(ledgerService, never()).execute(any());
+    }
+
+    @Test
+    void rejectsInvalidClearingAccountConfiguration() {
+        Account invalidClearingAccount = createAccount(
+            AccountType.FEE,
+            AccountStatus.ACTIVE,
+            amount.currency()
+        );
+
+        var command = new FundSandboxAccountCommand(
+            customerAccount.id(),
+            amount
+        );
+
+        when(accountRepository.findById(customerAccount.id()))
+            .thenReturn(Optional.of(customerAccount));
+        when(clearingAccountProvider.getForCurrency(amount.currency()))
+            .thenReturn(invalidClearingAccount);
+
         assertThrows(
-            IllegalArgumentException.class,
+            IllegalStateException.class,
             () -> service.execute(command)
         );
 
