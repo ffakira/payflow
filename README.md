@@ -191,7 +191,7 @@ Na raiz do projeto, execute:
 
 ```bash
 docker compose up -d
-\`\`\`
+```
 
 O Docker Compose disponibiliza o PostgreSQL na porta `5433` do endereço `localhost`.
 
@@ -225,7 +225,7 @@ O ciclo `verify` executa as etapas de verificação configuradas no Maven, inclu
 
 ```bash
 ./mvnw spring-boot:run
-\`\`\`
+```
 
 **Windows:**
 

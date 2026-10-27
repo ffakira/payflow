@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.domain.Account;
+import dev.akira.payflow.common.error.BusinessException;
+import dev.akira.payflow.common.error.ErrorCode;
 import dev.akira.payflow.ledger.application.port.out.LedgerTransactionRepository;
 import dev.akira.payflow.ledger.domain.LedgerEntry;
 import dev.akira.payflow.ledger.domain.LedgerTransaction;
@@ -46,18 +48,21 @@ public class PostLedgerTransactionService {
         for (LedgerEntry entry : command.entries()) {
             Account account = accountRepository
                 .findById(entry.accountId())
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCode.ACCOUNT_NOT_FOUND,
                     "Account not found: " + entry.accountId().value()
                 ));
 
             if (!account.isActive()) {
-                throw new IllegalArgumentException(
+                throw new BusinessException(
+                    ErrorCode.ACCOUNT_NOT_ACTIVE,
                     "Account is not active: " + account.id().value()
                 );
             }
 
             if (!account.currency().equals(entry.amount().currency())) {
-                throw new IllegalArgumentException(
+                throw new BusinessException(
+                    ErrorCode.CURRENCY_MISMATCH,
                     "Entry currency does not match account currency: "
                         + account.id().value()
                 );

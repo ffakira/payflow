@@ -19,6 +19,8 @@ import dev.akira.payflow.account.domain.AccountType;
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
 import dev.akira.payflow.common.domain.money.CurrencyCode;
 import dev.akira.payflow.common.domain.money.Money;
+import dev.akira.payflow.common.error.BusinessException;
+import dev.akira.payflow.common.error.ErrorCode;
 import dev.akira.payflow.ledger.domain.EntryType;
 import dev.akira.payflow.ledger.domain.LedgerEntry;
 import dev.akira.payflow.ledger.domain.LedgerTransaction;
@@ -112,11 +114,12 @@ public class PostLedgerTransactionServiceTest {
             List.of(debit, credit)
         );
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.ACCOUNT_NOT_FOUND, exception.errorCode());
         assertTrue(ledgerRepository.isEmpty());
     }
 
@@ -133,11 +136,12 @@ public class PostLedgerTransactionServiceTest {
             creditAccount
         );
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.ACCOUNT_NOT_ACTIVE, exception.errorCode());
         assertTrue(ledgerRepository.isEmpty());
     }
 
@@ -163,11 +167,12 @@ public class PostLedgerTransactionServiceTest {
             List.of(debit, credit)
         );
 
-        assertThrows(
-            IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+            BusinessException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(ErrorCode.CURRENCY_MISMATCH, exception.errorCode());
         assertTrue(ledgerRepository.isEmpty());
     }
 
@@ -184,11 +189,15 @@ public class PostLedgerTransactionServiceTest {
             )
         );
 
-        assertThrows(
+        IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> service.execute(command)
         );
 
+        assertEquals(
+            "Transaction is unbalanced for currency BRL",
+            exception.getMessage()
+        );
         assertTrue(ledgerRepository.isEmpty());
     }
 
