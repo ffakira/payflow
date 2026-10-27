@@ -19,6 +19,8 @@ import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountBalance;
 import dev.akira.payflow.account.domain.AccountId;
 import dev.akira.payflow.account.domain.AccountType;
+import dev.akira.payflow.common.error.BusinessException;
+import dev.akira.payflow.common.error.ErrorCode;
 import dev.akira.payflow.ledger.application.port.out.LedgerTransactionRepository;
 import dev.akira.payflow.ledger.application.service.PostLedgerTransactionCommand;
 import dev.akira.payflow.ledger.application.service.PostLedgerTransactionService;
@@ -72,7 +74,8 @@ public class TransferService {
             // The transaction template has rolled back the losing attempt before
             // this lookup. Only suppress the exception if the idempotency key won.
             Account source = accountRepository.findById(command.sourceAccountId())
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCode.ACCOUNT_NOT_FOUND,
                     "Source account not found: " + command.sourceAccountId().value()
                 ));
 
@@ -92,7 +95,8 @@ public class TransferService {
 
     private LedgerTransaction executeWithinTransaction(TransferCommand command, String requestHash) {
         Account sourceSnapshot = accountRepository.findById(command.sourceAccountId())
-            .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.ACCOUNT_NOT_FOUND,
                 "Source account not found: " + command.sourceAccountId().value()
             ));
 
@@ -113,9 +117,15 @@ public class TransferService {
             ? command.destinationAccountId() : command.sourceAccountId();
 
         Account first = accountRepository.findByIdForUpdate(firstId)
-            .orElseThrow(() -> new IllegalArgumentException("Account not found: " + firstId.value()));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.ACCOUNT_NOT_FOUND, 
+                "Account not found: " + firstId.value()
+            ));
         Account second = accountRepository.findByIdForUpdate(secondId)
-            .orElseThrow(() -> new IllegalArgumentException("Account not found: " + secondId.value()));
+            .orElseThrow(() -> new BusinessException(
+                ErrorCode.ACCOUNT_NOT_FOUND,
+                "Account not found: " + secondId.value()
+            ));
 
         Account source = first.id().equals(command.sourceAccountId()) ? first : second;
         Account destination = first.id().equals(command.destinationAccountId()) ? first : second;
@@ -126,7 +136,10 @@ public class TransferService {
             .orElseThrow(() -> new IllegalStateException("Source account balance could not be loaded"));
 
         if (balance.minorUnits() < command.amount().minorUnits()) {
-            throw new IllegalArgumentException("Insufficient funds");
+            throw new BusinessException(
+                ErrorCode.INSUFFICIENT_FUNDS,
+                "Insufficient funds"
+            );
         }
 
         LedgerTransaction transaction = ledgerService.execute(
@@ -156,25 +169,31 @@ public class TransferService {
 
     private void validateAccounts(Account source, Account destination, TransferCommand command) {
         if (source.type() != AccountType.CUSTOMER || destination.type() != AccountType.CUSTOMER) {
-            throw new IllegalArgumentException("Transfers require customer accounts");
+            throw new BusinessException(
+                ErrorCode.ACCOUNT_TYPE_NOT_ALLOWED,
+                "Transfers require customer accounts"
+            );
         }
 
         if (!source.isActive() || !destination.isActive()) {
-            throw new IllegalArgumentException("Both accounts must be active");
+            throw new BusinessException(
+                ErrorCode.ACCOUNT_NOT_ACTIVE,
+                "Both accounts must be active"
+            );
         }
 
-        if (!source.currency().equals(destination.currency())) {
-            throw new IllegalArgumentException("Transfer accounts must use the same currency");
-        }
-
-        if (!source.currency().equals(command.amount().currency())) {
-            throw new IllegalArgumentException("Transfer amount currency must match the accounts");
+        if (!source.currency().equals(destination.currency()) || !source.currency().equals(command.amount().currency())) {
+            throw new BusinessException(
+                ErrorCode.CURRENCY_MISMATCH,
+                "Transfer amount and both accounts must use the same currency"
+            );
         }
     }
 
     private LedgerTransaction resolveExisting(TransferIdempotencyRecord existing, String requestHash) {
         if (!existing.requestHash().equals(requestHash)) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                ErrorCode.IDEMPOTENCY_KEY_REUSED,
                 "Idempotency key has already been used with a different transfer request"
             );
         }
