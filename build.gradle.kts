@@ -44,7 +44,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     // Bytecode transformation
-    implementation("org.ow2.asm:asm:9.7.1")
+    implementation("org.ow2.asm:asm:9.11.1")
     implementation("org.ow2.asm:asm-tree:9.7.1")
 
     // Testing
@@ -56,6 +56,11 @@ dependencies {
 
     // Mockito Java agent
     testRuntimeOnly("org.mockito:mockito-core")
+
+    // Testcontainers
+    testImplementation(platform("org.testcontainers:testcontainers-bom:2.0.5"))
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
+    testImplementation("org.testcontainers:testcontainers-postgresql:1.21.4")
 }
 
 // Isolated configuration for the Mockito Java agent
