@@ -2,15 +2,15 @@ package dev.akira.payflow.support;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-@Testcontainers
 public abstract class AbstractPostgresIntegrationTest {
 
-    @Container
     static final PostgreSQLContainer POSTGRES = PostgresTestContainer.POSTGRES;
+
+    static {
+        POSTGRES.start();
+    }
 
     @DynamicPropertySource
     static void configureDatabase(DynamicPropertyRegistry registry) {
