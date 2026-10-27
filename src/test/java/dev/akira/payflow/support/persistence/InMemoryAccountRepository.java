@@ -33,8 +33,13 @@ public final class InMemoryAccountRepository
         return findById(id);
     }
 
-    public List<Account> all() {
+    @Override
+    public List<Account> findAll() {
         return List.copyOf(accounts.values());
+    }
+
+    public List<Account> all() {
+        return findAll();
     }
 
     public int size() {

@@ -8,7 +8,7 @@ Mais do que fazer funcionalidades funcionarem, o projeto busca compreender **com
 
 ## Objetivos de aprendizado
 
-O projeto foi desenvolvido para explorar os seguintes conceitos:
+O projeto explora os seguintes conceitos:
 
 - **Java moderno:** records, enums, objetos de valor, imutabilidade e tratamento de exceções.
 - **Spring Boot:** injeção de dependências, configuração da aplicação e gerenciamento de transações.
@@ -17,8 +17,9 @@ O projeto foi desenvolvido para explorar os seguintes conceitos:
 - **Processamento de pagamentos:** transferências, consulta de saldos e idempotência.
 - **Contabilidade de partidas dobradas:** registro de movimentações por meio de débitos e créditos balanceados.
 - **Integridade de dados:** transações, restrições do PostgreSQL e migrações com Flyway.
-- **Testes automatizados:** combinação de testes unitários e testes de integração.
-- **Práticas de produção:** configuração por ambiente, observabilidade e integração contínua.
+- **Testes automatizados:** testes unitários e de integração.
+- **Práticas de engenharia:** configuração por ambiente, observabilidade, cobertura de testes e integração contínua.
+- **Build reproduzível:** gerenciamento de dependências e execução de tarefas com Gradle.
 
 ## Funcionalidades e conceitos
 
@@ -118,7 +119,7 @@ Representa os conceitos financeiros, os objetos de valor e as regras que precisa
 
 **Aplicação**
 
-Coordena os casos de uso. Os serviços de aplicação validam as condições necessárias e organizam as interações entre o domínio e as portas de saída.
+Coordena os casos de uso e organiza as interações entre o domínio e as portas de saída.
 
 **Portas**
 
@@ -140,15 +141,17 @@ Essa separação permite testar muitas regras de negócio sem precisar iniciar t
 |---|---|
 | Java 21 | Linguagem de programação |
 | Spring Boot | Injeção de dependências e infraestrutura da aplicação |
-| Maven Wrapper | Execução reproduzível do build e dos testes |
+| Gradle Kotlin DSL | Configuração do build e gerenciamento de dependências |
+| Gradle Wrapper | Execução reproduzível do build e dos testes |
 | PostgreSQL 18 | Persistência relacional |
 | Flyway | Versionamento e execução de migrações do banco |
 | JDBC | Acesso ao banco pelos adaptadores de persistência |
 | JUnit | Testes automatizados |
 | Mockito | Simulação de dependências e verificação de interações nos testes |
-| JaCoCo | Relatório de cobertura de testes |
+| JaCoCo | Relatórios de cobertura de testes |
 | Spring Boot Actuator | Verificações de saúde e métricas |
 | Docker Compose | Ambiente local para o PostgreSQL |
+| ASM | Transformação de bytecode Java para validações de records |
 
 ## Como executar localmente
 
@@ -159,6 +162,8 @@ Instale as seguintes ferramentas:
 - JDK 21.
 - Docker com Docker Compose.
 - Git.
+
+O Gradle Wrapper incluído no repositório gerencia a versão do Gradle utilizada pelo projeto. Não é necessário instalar o Gradle globalmente.
 
 ### 1. Clone o repositório
 
@@ -201,36 +206,56 @@ Para verificar o estado do contêiner:
 docker compose ps
 ```
 
-As migrações do Flyway são executadas pela aplicação.
+As migrações do Flyway são executadas pela aplicação durante a inicialização, conforme sua configuração.
 
 ### 4. Execute os testes
 
 **Linux/macOS:**
 
 ```bash
-./mvnw verify
+./gradlew clean check
 ```
 
 **Windows:**
 
 ```powershell
-.\mvnw.cmd verify
+.\gradlew.bat clean check
 ```
 
-O ciclo `verify` executa as etapas de verificação configuradas no Maven, incluindo os testes e a geração do relatório do JaCoCo.
+O ciclo `check` executa as verificações configuradas no Gradle, incluindo os testes automatizados. O relatório de cobertura do JaCoCo é gerado pela tarefa de relatório configurada no build.
+
+Para executar apenas os testes:
+
+```bash
+./gradlew test
+```
+
+Para gerar o relatório de cobertura explicitamente:
+
+```bash
+./gradlew jacocoTestReport
+```
+
+Após a execução, consulte os relatórios em:
+
+- **Cobertura HTML:** `build/reports/jacoco/test/html/index.html`
+- **Cobertura XML:** `build/reports/jacoco/test/jacocoTestReport.xml`
+- **Resultados dos testes:** `build/reports/tests/test/index.html`
+
+Os caminhos correspondem à configuração padrão de saída do JaCoCo e do Gradle, salvo alterações no build.
 
 ### 5. Inicie a aplicação
 
 **Linux/macOS:**
 
 ```bash
-./mvnw spring-boot:run
+./gradlew bootRun
 ```
 
 **Windows:**
 
 ```powershell
-.\mvnw.cmd spring-boot:run
+.\gradlew.bat bootRun
 ```
 
 Durante a inicialização, o Flyway gerencia as migrações do banco de dados.
@@ -300,6 +325,19 @@ Os testes unitários ajudam a isolar regras de negócio e comportamentos dos ser
 
 Os dois tipos são importantes: um teste unitário aprovado não comprova, por si só, que uma restrição do banco está funcionando corretamente.
 
+### 7. Explore o build e a transformação de bytecode
+
+O projeto utiliza Gradle Kotlin DSL para configurar dependências, tarefas de compilação, testes e relatórios.
+
+Também é possível estudar a transformação de bytecode implementada com ASM para compreender como classes Java compiladas podem ser modificadas programaticamente.
+
+Investigue:
+
+- Como as dependências de compilação e teste são declaradas.
+- Como o Gradle organiza as tarefas de compilação, transformação e teste.
+- Como a transformação de bytecode interage com os construtores dos records.
+- Como os testes verificam o comportamento após a transformação.
+
 ## Princípios de engenharia
 
 À medida que o projeto evolui, estes princípios ajudam a orientar as decisões técnicas:
@@ -311,6 +349,7 @@ Os dois tipos são importantes: um teste unitário aprovado não comprova, por s
 - **Erros explícitos:** falhas de negócio esperadas devem utilizar códigos estáveis.
 - **Separação de responsabilidades:** as regras de domínio não devem depender desnecessariamente do Spring ou de detalhes do banco.
 - **Testes orientados ao comportamento:** os testes devem demonstrar resultados e regras importantes, não apenas a execução de métodos.
+- **Build reproduzível:** o Gradle Wrapper e as dependências declaradas devem permitir que outros desenvolvedores executem o projeto de maneira consistente.
 - **Complexidade gradual:** novas abstrações devem resolver problemas reais, em vez de serem introduzidas apenas para imitar sistemas maiores.
 
 ## Próximas etapas de aprendizado
@@ -324,6 +363,7 @@ Algumas evoluções possíveis para o projeto:
 - Melhorar logs, métricas e diagnóstico operacional.
 - Explorar estornos, tarifas, saques e conversão cambial.
 - Aprofundar os estudos de segurança, autenticação, autorização e auditoria.
+- Avaliar os resultados de cobertura e identificar lacunas relevantes nos testes.
 
 Esses itens representam possibilidades de evolução, e não necessariamente funcionalidades já implementadas.
 

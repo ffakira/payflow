@@ -44,19 +44,28 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-          cache: maven
+          cache: gradle
 
-      - name: Make Maven wrapper executable
-        run: chmod +x mvnw
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
 
       - name: Run tests and verify build
-        run: ./mvnw --batch-mode --no-transfer-progress verify
+        run: ./gradlew --no-daemon --console=plain clean check
 
       - name: Upload JaCoCo report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: target/site/jacoco/
+          path: build/reports/jacoco/test/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: build/reports/tests/test/
           if-no-files-found: ignore
           retention-days: 7

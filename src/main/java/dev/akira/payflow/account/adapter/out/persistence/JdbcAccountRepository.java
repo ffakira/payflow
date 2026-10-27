@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -60,6 +61,19 @@ public class JdbcAccountRepository implements AccountRepository {
         FROM accounts
         WHERE id = ?
         FOR UPDATE
+    """;
+
+    private static final String FIND_ALL_SQL = """
+        SELECT
+            id,
+            holder_id,
+            account_number,
+            account_type,
+            currency_code,
+            status,
+            created_at
+        FROM accounts
+        ORDER BY created_at DESC, id
     """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -121,6 +135,14 @@ public class JdbcAccountRepository implements AccountRepository {
         } catch (EmptyResultDataAccessException exception) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<Account> findAll() {
+        return jdbcTemplate.query(
+            FIND_ALL_SQL,
+            (rs, rowNum) -> mapAccount(rs)
+        );
     }
 
     private Account mapAccount(ResultSet rs) throws SQLException {
