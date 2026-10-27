@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,19 +13,19 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountId;
 import dev.akira.payflow.account.domain.AccountType;
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
 import dev.akira.payflow.common.domain.money.CurrencyCode;
 import dev.akira.payflow.common.domain.money.Money;
-import dev.akira.payflow.ledger.application.port.out.LedgerTransactionRepository;
 import dev.akira.payflow.ledger.domain.EntryType;
 import dev.akira.payflow.ledger.domain.LedgerEntry;
 import dev.akira.payflow.ledger.domain.LedgerTransaction;
 import dev.akira.payflow.ledger.domain.LedgerTransactionId;
 import dev.akira.payflow.ledger.domain.LedgerTransactionType;
+import dev.akira.payflow.support.persistence.InMemoryAccountRepository;
+import dev.akira.payflow.support.persistence.InMemoryLedgerTransactionRepository;
 
 public class PostLedgerTransactionServiceTest {
     
@@ -87,8 +86,8 @@ public class PostLedgerTransactionServiceTest {
         assertNotNull(result);
         assertEquals(LedgerTransactionType.TRANSFER, result.type());
         assertEquals(2, result.entries().size());
-        assertEquals(1, ledgerRepository.saved.size());
-        assertEquals(result, ledgerRepository.saved.getFirst());
+        assertEquals(1, ledgerRepository.size());
+        assertEquals(result, ledgerRepository.all().getFirst());
     }
 
     @Test
@@ -118,7 +117,7 @@ public class PostLedgerTransactionServiceTest {
             () -> service.execute(command)
         );
 
-        assertTrue(ledgerRepository.saved.isEmpty());
+        assertTrue(ledgerRepository.isEmpty());
     }
 
     @Test
@@ -139,7 +138,7 @@ public class PostLedgerTransactionServiceTest {
             () -> service.execute(command)
         );
 
-        assertTrue(ledgerRepository.saved.isEmpty());
+        assertTrue(ledgerRepository.isEmpty());
     }
 
     @Test
@@ -169,7 +168,7 @@ public class PostLedgerTransactionServiceTest {
             () -> service.execute(command)
         );
 
-        assertTrue(ledgerRepository.saved.isEmpty());
+        assertTrue(ledgerRepository.isEmpty());
     }
 
     @Test
@@ -190,7 +189,7 @@ public class PostLedgerTransactionServiceTest {
             () -> service.execute(command)
         );
 
-        assertTrue(ledgerRepository.saved.isEmpty());
+        assertTrue(ledgerRepository.isEmpty());
     }
 
     @Test
@@ -247,51 +246,5 @@ public class PostLedgerTransactionServiceTest {
             type,
             Money.ofMinorUnits(amountMinor, account.currency())
         );
-    }
-
-    private static final class InMemoryAccountRepository implements AccountRepository {
-        
-        private final List<Account> saved = new ArrayList<>();
-
-        @Override
-        public Account save(Account account) {
-            saved.removeIf(existing ->
-                existing.id().equals(account.id())
-            );
-
-            saved.add(account);
-            return account;
-        }
-
-        @Override
-        public Optional<Account> findById(AccountId id) {
-            return saved.stream()
-                .filter(account -> account.id().equals(id))
-                .findFirst();
-        }
-
-        @Override
-        public Optional<Account> findByIdForUpdate(AccountId id) {
-            // in-memory test double: no database row locking is required
-            return findById(id);
-        }
-    }
-
-    private static final class InMemoryLedgerTransactionRepository implements LedgerTransactionRepository {
-
-        private final List<LedgerTransaction> saved = new ArrayList<>();
-
-        @Override
-        public LedgerTransaction save(LedgerTransaction transaction) {
-            saved.add(transaction);
-            return transaction;
-        }
-
-        @Override
-        public Optional<LedgerTransaction> findById(LedgerTransactionId id) {
-            return saved.stream()
-                .filter(transaction -> transaction.id().equals(id))
-                .findFirst();
-        }
     }
 }

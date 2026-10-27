@@ -2,10 +2,8 @@
 package dev.akira.payflow.account.application.service;
 
 import dev.akira.payflow.account.application.port.out.AccountHolderRepository;
-import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.application.port.out.CurrencyRepository;
 import dev.akira.payflow.account.domain.Account;
-import dev.akira.payflow.account.domain.AccountId;
 import dev.akira.payflow.account.domain.AccountStatus;
 import dev.akira.payflow.account.domain.AccountType;
 import dev.akira.payflow.account.domain.holder.AccountHolder;
@@ -14,6 +12,7 @@ import dev.akira.payflow.account.domain.holder.AccountHolderType;
 import dev.akira.payflow.common.domain.money.CurrencyCode;
 import dev.akira.payflow.common.error.BusinessException;
 import dev.akira.payflow.common.error.ErrorCode;
+import dev.akira.payflow.support.persistence.InMemoryAccountRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 class OpenAccountServiceTest {
 
@@ -69,7 +67,7 @@ class OpenAccountServiceTest {
         OpenAccountResult result = service.execute(command);
 
         assertEquals(1, holderRepository.saved.size());
-        assertEquals(1, accountRepository.saved.size());
+        assertEquals(1, accountRepository.size());
 
         AccountHolder holder = result.holder();
         Account account = result.account();
@@ -95,7 +93,7 @@ class OpenAccountServiceTest {
         );
 
         assertTrue(holderRepository.saved.isEmpty());
-        assertTrue(accountRepository.saved.isEmpty());
+        assertTrue(accountRepository.isEmpty());
     }
 
     @Test
@@ -113,7 +111,7 @@ class OpenAccountServiceTest {
 
         assertEquals(ErrorCode.DISPLAY_NAME_REQUIRED, exception.errorCode());
         assertTrue(holderRepository.saved.isEmpty());
-        assertTrue(accountRepository.saved.isEmpty());
+        assertTrue(accountRepository.isEmpty());
     }
 
     @Test
@@ -133,7 +131,7 @@ class OpenAccountServiceTest {
 
         assertEquals(ErrorCode.CURRENCY_NOT_ENABLED, exception.errorCode());
         assertTrue(holderRepository.saved.isEmpty());
-        assertTrue(accountRepository.saved.isEmpty());
+        assertTrue(accountRepository.isEmpty());
     }
 
     @Test
@@ -151,11 +149,10 @@ class OpenAccountServiceTest {
                 () -> service.execute(command)
         );
 
-        assertTrue(accountRepository.saved.isEmpty());
+        assertTrue(accountRepository.isEmpty());
     }
 
-    private static final class InMemoryHolderRepository
-            implements AccountHolderRepository {
+    private static final class InMemoryHolderRepository implements AccountHolderRepository {
 
         private final List<AccountHolder> saved = new ArrayList<>();
         private boolean failOnSave;
@@ -171,33 +168,7 @@ class OpenAccountServiceTest {
         }
     }
 
-    private static final class InMemoryAccountRepository
-            implements AccountRepository {
-
-        private final List<Account> saved = new ArrayList<>();
-
-        @Override
-        public Account save(Account account) {
-            saved.add(account);
-            return account;
-        }
-
-        @Override
-        public Optional<Account> findById(AccountId id) {
-            return saved.stream()
-                .filter(account -> account.id().equals(id))
-                .findFirst();
-        }
-
-        @Override
-        public Optional<Account> findByIdForUpdate(AccountId id) {
-            // in-memory test double: no database row locking is required.
-            return findById(id);
-        }
-    }
-
-    private static final class InMemoryCurrencyRepository
-            implements CurrencyRepository {
+    private static final class InMemoryCurrencyRepository implements CurrencyRepository {
 
         private boolean enabled = true;
 

@@ -20,7 +20,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.SimpleTransactionStatus;
 
 import dev.akira.payflow.account.application.port.out.AccountBalanceQuery;
-import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountBalance;
 import dev.akira.payflow.account.domain.AccountId;
@@ -36,6 +35,7 @@ import dev.akira.payflow.ledger.domain.EntryType;
 import dev.akira.payflow.ledger.domain.LedgerTransaction;
 import dev.akira.payflow.ledger.domain.LedgerTransactionId;
 import dev.akira.payflow.ledger.domain.LedgerTransactionType;
+import dev.akira.payflow.support.persistence.InMemoryAccountRepository;
 import dev.akira.payflow.transfer.application.port.out.TransferIdempotencyRecord;
 import dev.akira.payflow.transfer.application.port.out.TransferIdempotencyRepository;
 
@@ -317,29 +317,6 @@ class TransferServiceTest {
         @Override
         public void rollback(TransactionStatus status) {
             // Unit-test transaction boundary only.
-        }
-    }
-
-    private static final class InMemoryAccountRepository
-            implements AccountRepository {
-
-        private final Map<AccountId, Account> accounts = new HashMap<>();
-
-        @Override
-        public Account save(Account account) {
-            accounts.put(account.id(), account);
-            return account;
-        }
-
-        @Override
-        public Optional<Account> findById(AccountId id) {
-            return Optional.ofNullable(accounts.get(id));
-        }
-
-        @Override
-        public Optional<Account> findByIdForUpdate(AccountId id) {
-            // In-memory fake: it does not provide real row locking.
-            return findById(id);
         }
     }
 
