@@ -1,6 +1,5 @@
 package dev.akira.payflow.account.application.port.out;
 
-import java.util.List;
 import java.util.Optional;
 
 import dev.akira.payflow.account.domain.Account;
@@ -14,5 +13,5 @@ public interface AccountRepository {
 
     Optional<Account> findByIdForUpdate(AccountId id);
 
-    List<Account> findAll();
+    AccountPage findCustomerAccounts(int pageSize, Optional<AccountCursor> after);
 }

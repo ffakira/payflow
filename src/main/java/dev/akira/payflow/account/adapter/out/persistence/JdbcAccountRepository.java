@@ -4,10 +4,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import dev.akira.payflow.account.application.port.out.AccountCursor;
+import dev.akira.payflow.account.application.port.out.AccountPage;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -22,7 +25,9 @@ import dev.akira.payflow.common.domain.money.CurrencyCode;
 
 @Repository
 public class JdbcAccountRepository implements AccountRepository {
-    
+
+    private static final int MAX_PAGE_SIZE = 100;
+
     private static final String INSERT_SQL = """
         INSERT INTO accounts (
             id,
@@ -63,7 +68,7 @@ public class JdbcAccountRepository implements AccountRepository {
         FOR UPDATE
     """;
 
-    private static final String FIND_ALL_SQL = """
+    private static final String FIND_CUSTOMER_ACCOUNTS_SQL = """
         SELECT
             id,
             holder_id,
@@ -73,7 +78,25 @@ public class JdbcAccountRepository implements AccountRepository {
             status,
             created_at
         FROM accounts
-        ORDER BY created_at DESC, id
+        WHERE account_type = 'CUSTOMER'
+        ORDER BY created_at DESC, id DESC
+        LIMIT ?
+    """;
+
+    private static final String FIND_CUSTOMER_ACCOUNTS_AFTER_SQL = """
+        SELECT
+            id,
+            holder_id,
+            account_number,
+            account_type,
+            currency_code,
+            status,
+            created_at
+        FROM accounts
+        WHERE account_type = 'CUSTOMER'
+            AND (created_at, id) < (?, ?)
+        ORDER BY created_at DESC, id DESC
+        LIMIT ?
     """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -138,11 +161,46 @@ public class JdbcAccountRepository implements AccountRepository {
     }
 
     @Override
-    public List<Account> findAll() {
-        return jdbcTemplate.query(
-            FIND_ALL_SQL,
-            (rs, rowNum) -> mapAccount(rs)
+    public AccountPage findCustomerAccounts(int pageSize, Optional<AccountCursor> after) {
+        Objects.requireNonNull(after, "Cusor optional must not be null");
+
+        if (pageSize < 1 || pageSize > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException("Page size must be between 1 and " + MAX_PAGE_SIZE);
+        }
+
+        int fetchLimit = pageSize + 1;
+
+        List<Account> fetched = after
+                .map(cursor -> jdbcTemplate.query(
+                        FIND_CUSTOMER_ACCOUNTS_AFTER_SQL,
+                        (rs, rowNum) -> mapAccount(rs),
+                        OffsetDateTime.ofInstant(cursor.createdAt(), ZoneOffset.UTC),
+                        cursor.id().value(),
+                        fetchLimit
+                ))
+                .orElseGet(() -> jdbcTemplate.query(
+                        FIND_CUSTOMER_ACCOUNTS_SQL,
+                        (rs, rowNum) -> mapAccount(rs),
+                        fetchLimit
+                ));
+
+        boolean hasNext = fetched.size() > pageSize;
+
+        List<Account> items = new ArrayList<>(
+                fetched.subList(0, Math.min(fetched.size(), pageSize))
         );
+
+        Optional<AccountCursor> nextCursor = Optional.empty();
+
+        if (hasNext && !items.isEmpty()) {
+            Account last = items.getLast();
+
+            nextCursor = Optional.of(
+                    new AccountCursor(last.createdAt(), last.id())
+            );
+        }
+
+        return new AccountPage(items, nextCursor);
     }
 
     private Account mapAccount(ResultSet rs) throws SQLException {

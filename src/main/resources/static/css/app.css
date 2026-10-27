@@ -7,3 +7,5 @@
 @import url("./layout/layout.css");
 @import url("./components/components.css");
 @import url("./utilities/utilities.css");
+
+@import url("./pages/accounts.css");

@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PayFlow — Application Exception</title>
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0b0e14;
+            --panel: #111722;
+            --border: #293344;
+            --text: #dce4f0;
+            --muted: #8b98ad;
+            --red: #ff6b81;
+            --yellow: #f6c76b;
+            --blue: #8ba9ff;
+            --green: #9bd7b2;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo,
+            Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border);
+            background: #0e131c;
+        }
+
+        .brand {
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: -.04em;
+            font-size: 18px;
+        }
+
+        .brand span { color: var(--muted); }
+
+        .badge {
+            color: var(--red);
+            border: 1px solid #663340;
+            background: #281720;
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        main {
+            width: min(1100px, calc(100% - 32px));
+            margin: 44px auto;
+        }
+
+        .eyebrow {
+            color: var(--red);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+        }
+
+        h1 {
+            font-size: clamp(23px, 4vw, 34px);
+            line-height: 1.25;
+            letter-spacing: -.04em;
+            margin: 10px 0;
+            overflow-wrap: anywhere;
+        }
+
+        h2 {
+            font-size: 15px;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin: 0 0 28px;
+            overflow-wrap: anywhere;
+        }
+
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+
+        .chip {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            padding: 6px 10px;
+            border-radius: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .chip strong { color: var(--text); }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            margin: 18px 0;
+            overflow: hidden;
+        }
+
+        .panel-heading {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+        }
+
+        .panel-heading .hint {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 400;
+        }
+
+        .dots {
+            display: inline-flex;
+            gap: 6px;
+            margin-right: 10px;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background: #ff6b81; }
+        .dot.yellow { background: #f6c76b; }
+        .dot.green { background: #78c99b; }
+
+        pre {
+            margin: 0;
+            padding: 18px;
+            overflow: auto;
+            max-height: 500px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            color: #cbd6e6;
+            font: inherit;
+            font-size: 12px;
+            line-height: 1.75;
+            tab-size: 4;
+        }
+
+        .error-text { color: var(--red); }
+        .muted { color: var(--muted); }
+        .diagnostic { color: var(--yellow); }
+
+        details summary {
+            cursor: pointer;
+            padding: 14px 16px;
+            color: var(--blue);
+            user-select: none;
+        }
+
+        details summary:hover { background: #182131; }
+
+        .empty-trace {
+            padding: 16px 18px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 9px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .primary {
+            background: var(--blue);
+            color: #0b1020;
+            border: 1px solid var(--blue);
+        }
+
+        .secondary {
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: var(--panel);
+        }
+
+        .footer {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 32px;
+        }
+
+        @media (max-width: 600px) {
+            main { margin-top: 28px; }
+            .topbar { padding: 12px 16px; }
+            pre { padding: 14px; }
+        }
+    </style>
+</head>
+
+<body>
+<header class="topbar">
+    <div class="brand">PayFlow <span>/ exception</span></div>
+    <span class="badge">DEVELOPMENT ERROR</span>
+</header>
+
+<main>
+    <div class="eyebrow">
+        <span th:text="'HTTP ' + ${status ?: 500}">HTTP 500</span>
+        &nbsp;·&nbsp; Unhandled exception
+    </div>
+
+    <h1 th:text="${error ?: 'Internal Server Error'}">
+        Internal Server Error
+    </h1>
+
+    <p class="subtitle"
+       th:text="${message ?: 'The request could not be completed.'}">
+        The request could not be completed.
+    </p>
+
+    <div class="meta">
+        <div class="chip">
+            PATH <strong th:text="${path ?: 'Unknown'}">/accounts</strong>
+        </div>
+        <div class="chip">
+            STATUS <strong th:text="${status ?: 500}">500</strong>
+        </div>
+    </div>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <span class="dots">
+                    <i class="dot red"></i>
+                    <i class="dot yellow"></i>
+                    <i class="dot green"></i>
+                </span>
+                Exception output
+            </div>
+            <span class="hint">Spring Boot</span>
+        </div>
+
+        <pre><span class="error-text">ERROR</span>
+<span th:text="${exception ?: error ?: 'Unhandled exception'}">Exception</span>
+
+<span th:text="${message ?: 'No exception message available.'}">Error details</span></pre>
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading">
+            SQL / diagnostic message
+            <span class="hint">Raw exception message</span>
+        </div>
+
+        <pre th:text="${message ?: 'No diagnostic message available.'}">Database error details</pre>
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading">
+            Stack trace
+            <span class="hint">Diagnostic output</span>
+        </div>
+
+        <details open th:if="${trace != null and !trace.isBlank()}">
+            <summary>Collapse stack trace</summary>
+            <pre th:text="${trace}">Stack trace</pre>
+        </details>
+
+        <div class="empty-trace"
+             th:unless="${trace != null and !trace.isBlank()}">
+            No stack trace was supplied to this error page.
+            Check the application console, or configure a custom
+            ErrorAttributes implementation to expose the trace locally.
+        </div>
+    </section>
+
+    <div class="actions">
+        <a class="button primary" th:href="@{/}">← Back to PayFlow</a>
+
+        <button class="button secondary" type="button"
+                onclick="window.location.reload()">
+            Retry request ↻
+        </button>
+    </div>
+
+    <p class="footer">
+        PayFlow developer diagnostics · Never expose stack traces or
+        internal exception messages in production.
+    </p>
+</main>
+</body>
+</html>

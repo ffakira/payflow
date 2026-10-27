@@ -1,18 +1,21 @@
 package dev.akira.payflow.account.application.service;
 
 import dev.akira.payflow.account.application.port.out.AccountBalanceQuery;
+import dev.akira.payflow.account.application.port.out.AccountCursor;
+import dev.akira.payflow.account.application.port.out.AccountPage;
 import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountBalance;
-import dev.akira.payflow.account.domain.AccountType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class ListAccountsService {
+
+    private static final int DEFAULT_PAGE_SIZE =  25;
 
     private final AccountRepository accountRepository;
     private final AccountBalanceQuery accountBalanceQuery;
@@ -23,12 +26,18 @@ public class ListAccountsService {
     }
 
     @Transactional(readOnly = true)
-    public List<AccountOverview> execute() {
-        return accountRepository.findAll()
-                .stream()
-                .filter(account -> account.type() == AccountType.CUSTOMER)
-                .map(this::toOverview)
-                .toList();
+    public AccountOverviewPage execute(Optional<AccountCursor> after) {
+        AccountPage page = accountRepository.findCustomerAccounts(
+                DEFAULT_PAGE_SIZE,
+                Objects.requireNonNull(after)
+        );
+
+        return new AccountOverviewPage(
+                page.items().stream()
+                        .map(this::toOverview)
+                        .toList(),
+                page.nextCursor()
+        );
     }
 
     private AccountOverview toOverview(Account account) {

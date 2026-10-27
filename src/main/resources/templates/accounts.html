@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/app :: layout(~{::content}, 'Accounts', 'accounts')}">
+<body>
+<th:block th:fragment="content">
+
+    <div th:replace="~{fragments/page-header :: pageHeader(
+            'Accounts',
+            'View your account balances and account status.'
+        )}">
+    </div>
+
+    <section class="section accounts-page" aria-labelledby="accounts-heading">
+
+        <div class="accounts-toolbar">
+            <div>
+                <h2 id="accounts-heading">Your accounts</h2>
+                <p class="accounts-subtitle">
+                    Review your balances and manage your available funds.
+                </p>
+            </div>
+
+            <span class="accounts-count"
+                  th:text="${#lists.size(page.items)} +
+                      (${#lists.size(page.items)} == 1 ? ' account' : ' accounts')">
+                0 accounts
+            </span>
+        </div>
+
+        <div class="card accounts-empty"
+             th:if="${#lists.isEmpty(page.items)}">
+            <div class="empty-state">
+                <div class="accounts-empty__icon" aria-hidden="true">₤</div>
+                <h3 class="empty-state__title">No accounts yet</h3>
+                <p class="empty-state__description">
+                    Customer accounts will appear here when they are available.
+                </p>
+            </div>
+        </div>
+
+        <div class="card accounts-card"
+             th:unless="${#lists.isEmpty(page.items)}">
+
+            <div class="table-wrapper accounts-table-wrapper">
+                <table class="table accounts-table">
+                    <caption class="u-hidden">
+                        Customer accounts, balances, status, and available actions
+                    </caption>
+
+                    <thead>
+                    <tr>
+                        <th scope="col">Account</th>
+                        <th scope="col">Currency</th>
+                        <th scope="col" class="accounts-table__amount">
+                            Available balance
+                        </th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="accounts-table__actions">
+                            Actions
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="overview : ${page.items}">
+                        <td>
+                            <div class="account-cell">
+                                <span class="account-cell__icon"
+                                      aria-hidden="true">↗</span>
+                                <div class="account-cell__details">
+                                    <span class="account-number"
+                                          th:text="${overview.account.accountNumber}">
+                                        PF-000000
+                                    </span>
+                                    <span class="account-cell__caption">
+                                        Customer account
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="currency-label"
+                                  th:text="${overview.account.currency.value}">
+                                BRL
+                            </span>
+                        </td>
+
+                        <td class="accounts-table__amount">
+                            <span class="financial-value"
+                                  th:text="${overview.account.currency.value + ' ' +
+                                      #numbers.formatDecimal(
+                                          overview.balance.minorUnits / 100.0,
+                                          1, 2
+                                      )}">
+                                BRL 0.00
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${overview.account.status.name() == 'ACTIVE'}
+                                      ? ' badge--success'
+                                      : (${overview.account.status.name() == 'SUSPENDED'}
+                                          ? ' badge--warning'
+                                          : ' badge--neutral')"
+                                  th:text="${overview.account.status.name()}">
+                                ACTIVE
+                            </span>
+                        </td>
+
+                        <td class="accounts-table__actions">
+                            <a class="button button--secondary button--small accounts-action"
+                               th:if="${overview.account.status.name() == 'ACTIVE'}"
+                               th:href="@{/transfers/new(
+                                   sourceAccountId=${overview.account.id.value()}
+                               )}">
+                                Send money
+                                <span aria-hidden="true">→</span>
+                            </a>
+
+                            <span class="accounts-unavailable"
+                                  th:unless="${overview.account.status.name() == 'ACTIVE'}">
+                                Unavailable
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="accounts-card__footer"
+                 th:if="${page.nextCursor.isPresent()}">
+                <span class="accounts-pagination__hint">
+                    More accounts are available
+                </span>
+
+                <a class="button button--secondary accounts-next"
+                   th:href="@{/accounts(
+                       afterCreatedAt=${page.nextCursor.get().createdAt},
+                       afterId=${page.nextCursor.get().id.value()}
+                   )}">
+                    Next page
+                    <span aria-hidden="true">→</span>
+                </a>
+            </div>
+        </div>
+
+    </section>
+
+</th:block>
+</body>
+</html>
