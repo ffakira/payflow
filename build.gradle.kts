@@ -38,6 +38,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-kafka")
+
+    // Kafka
+    implementation("org.springframework.kafka:spring-kafka")
 
     // Database migrations and driver
     implementation("org.flywaydb:flyway-database-postgresql")

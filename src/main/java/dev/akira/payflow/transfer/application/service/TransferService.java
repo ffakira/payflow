@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import dev.akira.payflow.transfer.adapter.out.kafka.TransferEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import dev.akira.payflow.account.application.port.out.AccountBalanceQuery;
@@ -43,6 +46,7 @@ public class TransferService {
     private final LedgerTransactionRepository ledgerTransactionRepository;
     private final TransferIdempotencyRepository idempotencyRepository;
     private final TransactionTemplate transactionTemplate;
+    private final TransferEventPublisher transferEventPublisher;
 
     public TransferService(
         AccountRepository accountRepository,
@@ -50,7 +54,8 @@ public class TransferService {
         PostLedgerTransactionService ledgerService,
         LedgerTransactionRepository ledgerTransactionRepository,
         TransferIdempotencyRepository idempotencyRepository,
-        PlatformTransactionManager transactionManager
+        PlatformTransactionManager transactionManager,
+        TransferEventPublisher transferEventPublisher
     ) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.accountBalanceQuery = Objects.requireNonNull(accountBalanceQuery);
@@ -60,6 +65,7 @@ public class TransferService {
         this.transactionTemplate = new TransactionTemplate(
             Objects.requireNonNull(transactionManager)
         );
+        this.transferEventPublisher = Objects.requireNonNull(transferEventPublisher);
     }
 
     public LedgerTransaction execute(TransferCommand command) {
@@ -162,6 +168,17 @@ public class TransferService {
             command.idempotencyKey(),
             requestHash,
             transaction.id()
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        transferEventPublisher.publish(
+                                transaction.id().value().toString()
+                        );
+                    }
+                }
         );
 
         return transaction;
