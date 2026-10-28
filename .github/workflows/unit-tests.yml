@@ -32,8 +32,21 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
+      kafka:
+        image: apache/kafka:4.1.2
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd "/opt/kafka/bin/kafka-broker-api-versions.sh
+          --bootstrap-server localhost:9092"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 12
+          --health-start-period 20s
+
     env:
       DB_PASSWORD: payflow_ci_password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
 
     steps:
       - name: Checkout
@@ -48,6 +61,13 @@ jobs:
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
+
+      - name: Verify service connectivity
+        run: |
+          pg_isready -h localhost -p 5433 -U payflow -d payflow
+          docker run --rm --network host apache/kafka:4.1.2 \
+            /opt/kafka/bin/kafka-broker-api-versions.sh \
+            --bootstrap-server localhost:9092
 
       - name: Run tests and verify build
         run: ./gradlew --no-daemon --console=plain clean check
