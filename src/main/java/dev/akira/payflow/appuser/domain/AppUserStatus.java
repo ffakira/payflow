@@ -1,4 +1,4 @@
-package dev.akira.payflow.auth.domain;
+package dev.akira.payflow.appuser.domain;
 
 public enum AppUserStatus {
     ACTIVE,

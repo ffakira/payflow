@@ -1,4 +1,4 @@
-package dev.akira.payflow.auth.domain;
+package dev.akira.payflow.appuser.domain;
 
 import java.util.Objects;
 import java.util.UUID;

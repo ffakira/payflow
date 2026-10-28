@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountId;
+import dev.akira.payflow.account.domain.holder.AccountHolderId;
 
 public interface AccountRepository {
     
@@ -14,4 +15,6 @@ public interface AccountRepository {
     Optional<Account> findByIdForUpdate(AccountId id);
 
     AccountPage findCustomerAccounts(int pageSize, Optional<AccountCursor> after);
+
+    boolean existsByHolderId(AccountHolderId holderId);
 }

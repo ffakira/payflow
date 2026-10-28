@@ -1,8 +1,9 @@
-package dev.akira.payflow.auth.appuser.out;
+package dev.akira.payflow.appuser.application.port.out;
 
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
 import dev.akira.payflow.appuser.domain.AppUser;
 
+import java.time.Instant;
 import java.util.Optional;
 
 public interface AppUserRepository {
@@ -12,4 +13,8 @@ public interface AppUserRepository {
     Optional<AppUser> findByUsername(String username);
 
     Optional<AppUser> findByHolderId(AccountHolderId holderId);
+
+    int recordFailedLoginAttempts(String username, int maxFailedAttempts, Instant now, Instant lockedUntil);
+
+    int resetFailedLoginAttempts(String username, Instant now);
 }

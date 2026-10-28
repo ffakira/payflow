@@ -40,6 +40,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-json")
     implementation("org.springframework.boot:spring-boot-starter-kafka")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.session:spring-session-data-redis")
+
+    // requires bouncy castle for argon2id encoder
+    implementation("org.bouncycastle:bcprov-jdk18on:1.86")
 
     // Kafka
     implementation("org.springframework.kafka:spring-kafka")

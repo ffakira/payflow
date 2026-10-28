@@ -99,6 +99,15 @@ public class JdbcAccountRepository implements AccountRepository {
         LIMIT ?
     """;
 
+    private static final String EXISTS_BY_HOLDER_ID_SQL = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM accounts
+            WHERE holder_id = ?
+                AND account_type = 'CUSTOMER'
+        )
+    """;
+
     private final JdbcTemplate jdbcTemplate;
 
     public JdbcAccountRepository(JdbcTemplate jdbcTemplate) {
@@ -201,6 +210,19 @@ public class JdbcAccountRepository implements AccountRepository {
         }
 
         return new AccountPage(items, nextCursor);
+    }
+
+    @Override
+    public boolean existsByHolderId(AccountHolderId holderId) {
+        Objects.requireNonNull(holderId, "Account holder ID must not be null");
+
+        Boolean exists = jdbcTemplate.queryForObject(
+                EXISTS_BY_HOLDER_ID_SQL,
+                Boolean.class,
+                holderId.value()
+        );
+
+        return Boolean.TRUE.equals(exists);
     }
 
     private Account mapAccount(ResultSet rs) throws SQLException {
