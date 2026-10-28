@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/app :: layout(~{::content}, 'Add funds', 'funding')}">
+<body>
+<th:block th:fragment="content">
+    <div th:replace="~{fragments/page-header :: pageHeader(
+        'Add funds',
+        'Simulate a deposit into one of your PayFlow sandbox accounts.'
+    )}"></div>
+
+    <div th:if="${fundingSuccess}" class="card u-mb-6" role="status">
+        <p class="amount--positive" th:text="${fundingSuccess}">Funds added.</p>
+    </div>
+
+    <section class="card" aria-labelledby="funding-form-heading">
+        <div class="card__header">
+            <div>
+                <h2 class="card__title" id="funding-form-heading">Sandbox deposit</h2>
+                <p class="card__description">
+                    This creates a ledger deposit. No real money is moved.
+                </p>
+            </div>
+            <span class="badge badge--warning">Sandbox only</span>
+        </div>
+
+        <form th:action="@{/sandbox/funding}"
+              th:object="${fundingForm}"
+              method="post">
+
+            <input type="hidden" th:field="*{idempotencyKey}">
+
+            <div class="form-error u-mb-4"
+                 th:if="${#fields.hasGlobalErrors() or #fields.hasErrors('*')}"
+                 role="alert">
+                <p th:each="error : ${#fields.globalErrors()}"
+                   th:text="${error}"></p>
+            </div>
+
+            <div class="form-field u-mb-5">
+                <label class="form-label" for="accountId">Customer account</label>
+                <select class="select"
+                        id="accountId"
+                        th:field="*{accountId}"
+                        required>
+                    <option value="">Choose an account</option>
+                    <option th:each="overview : ${accounts}"
+                            th:value="${overview.account.id.value}"
+                            th:text="${overview.account.currency.value + ' · ' + overview.account.accountNumber}">
+                    </option>
+                </select>
+                <p class="form-error"
+                   th:if="${#fields.hasErrors('accountId')}"
+                   th:errors="*{accountId}"></p>
+                <p class="form-hint">Only customer accounts are listed.</p>
+            </div>
+
+            <div class="form-field u-mb-6">
+                <label class="form-label" for="amount">Amount</label>
+                <input class="input"
+                       id="amount"
+                       type="number"
+                       min="0.01"
+                       max="999999999999.99"
+                       step="0.01"
+                       th:field="*{amount}"
+                       placeholder="100.00"
+                       inputmode="decimal"
+                       required>
+                <p class="form-error"
+                   th:if="${#fields.hasErrors('amount')}"
+                   th:errors="*{amount}"></p>
+                <p class="form-hint">
+                    Enter a positive amount with up to two decimal places.
+                </p>
+            </div>
+
+            <div class="cluster">
+                <button class="button button--primary" type="submit">
+                    Add funds
+                </button>
+                <a class="button button--secondary" th:href="@{/}">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </section>
+</th:block>
+</body>
+</html>
