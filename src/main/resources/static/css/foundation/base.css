@@ -160,3 +160,12 @@
     }
   }
 }
+
+/**
+ * Alpine custom data attributes
+ */
+@layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+}

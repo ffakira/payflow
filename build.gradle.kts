@@ -1,9 +1,9 @@
-
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.TestDescriptor
 import org.gradle.api.tasks.testing.TestListener
 import org.gradle.api.tasks.testing.TestResult
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     java
@@ -88,25 +88,21 @@ tasks.withType<Test>().configureEach {
         exceptionFormat = TestExceptionFormat.FULL
     }
 
-    // Attach the Mockito Java agent to the test JVM
-    doFirst {
-        val mockitoJar = mockitoAgent.singleFile
-
-        jvmArgs(
-            "-javaagent:${mockitoJar.absolutePath}",
-            "-Xshare:off"
-        )
-    }
+    // Attach the Mockito Java agent to the test JVM (Modern syntax)
+    jvmArgumentProviders.add(
+        CommandLineArgumentProvider {
+            listOf(
+                "-javaagent:${mockitoAgent.singleFile.absolutePath}",
+                "-Xshare:off"
+            )
+        }
+    )
 
     // Print a summary after the root test suite finishes
     addTestListener(object : TestListener {
-
         override fun beforeSuite(suite: TestDescriptor) = Unit
 
-        override fun afterSuite(
-            desc: TestDescriptor,
-            result: TestResult
-        ) {
+        override fun afterSuite(desc: TestDescriptor, result: TestResult) {
             if (desc.parent == null) {
                 println()
                 println("========================================")
@@ -121,21 +117,17 @@ tasks.withType<Test>().configureEach {
         }
 
         override fun beforeTest(testDescriptor: TestDescriptor) = Unit
-
-        override fun afterTest(
-            testDescriptor: TestDescriptor,
-            result: TestResult
-        ) = Unit
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) = Unit
     })
 }
 
 // Generate the JaCoCo report after tests
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
+tasks.named<Test>("test") {
+    finalizedBy(tasks.named("jacocoTestReport"))
 }
 
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.named("test"))
 
     reports {
         xml.required.set(true)
@@ -157,12 +149,9 @@ val transformRecordNullability by tasks.registering(JavaExec::class) {
         "dev.akira.payflow.common.domain.validation.RecordNullabilityTransformer"
     )
 
+    // Using the file path directly without eager .get()
     args(
-        layout.buildDirectory
-            .dir("classes/java/main")
-            .get()
-            .asFile
-            .absolutePath
+        layout.buildDirectory.dir("classes/java/main").get().asFile.absolutePath
     )
 }
 
