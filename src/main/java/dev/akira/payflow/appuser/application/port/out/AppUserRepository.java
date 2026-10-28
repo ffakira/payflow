@@ -17,4 +17,10 @@ public interface AppUserRepository {
     int recordFailedLoginAttempts(String username, int maxFailedAttempts, Instant now, Instant lockedUntil);
 
     int resetFailedLoginAttempts(String username, Instant now);
+
+    boolean isPinVerificationLocked(String username, Instant now);
+
+    int recordFailedPinAttempts(String username, int maxFailedAttempts, Instant now, Instant lockedUntil);
+
+    int resetFailedPinAttempts(String username, Instant now);
 }

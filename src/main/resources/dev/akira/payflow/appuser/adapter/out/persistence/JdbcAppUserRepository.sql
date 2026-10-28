@@ -117,3 +117,52 @@ WHERE username = ?
             AND locked_until <= ?
         )
     );
+
+-- name: isPinVerificationLocked
+SELECT EXISTS (
+    SELECT 1
+    FROM app_users
+    WHERE username = ?
+        AND pin_locked_until > ?
+);
+
+-- name: recordFailedPinAttempts
+UPDATE app_users
+SET failed_pin_attempts = CASE
+    WHEN pin_locked_until IS NOT NULL
+        AND pin_locked_until <= ?
+        THEN 1
+        ELSE failed_pin_attempts + 1
+    END,
+    pin_locked_until = CASE
+        WHEN (
+            CASE
+                WHEN pin_locked_until IS NOT NULL
+                AND pin_locked_until <= ?
+                ELSE failed_pin_attempts + 1
+            END
+        ) >= ?
+        WHEN pin_locked_until IS NOT NULL
+            AND pin_locked_until <= ?
+            THEN NULL
+            ELSE pin_locked_until
+        END,
+        updated_at = ?
+    WHERE username = ?
+        AND status <> 'DISABLED'
+        AND (
+            pin_locked_until IS NULL
+            OR pin_locked_until <= ?
+        );
+
+-- name: resetFailedPinAttempts
+UPDATE app_users
+SET failed_pin_attempts = 0,
+    pin_locked_until = NULL,
+    updated_at = ?
+WHERE username = ?
+    AND status <> 'DISABLED'
+    AND (
+        pin_locked_until IS NULL
+        OR pin_locked_until <= ?
+    );

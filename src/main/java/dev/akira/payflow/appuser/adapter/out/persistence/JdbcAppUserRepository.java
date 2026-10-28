@@ -152,6 +152,73 @@ public class JdbcAppUserRepository implements AppUserRepository {
         );
     }
 
+    @Override
+    public boolean isPinVerificationLocked(String username, Instant now) {
+        Objects.requireNonNull(username, "username cannot be null");
+        Objects.requireNonNull(now, "Current time cannot be null");
+
+        if (username.isBlank()) {
+            return false;
+        }
+
+        Boolean locked = jdbcTemplate.queryForObject(
+                SQL.get("isPinVerificationLocked"),
+                Boolean.class,
+                normalizeUsername(username),
+                Timestamp.from(now)
+        );
+
+        return Boolean.TRUE.equals(locked);
+    }
+
+    @Override
+    public int recordFailedPinAttempts(String username, int maxFailedAttempts, Instant now, Instant lockedUntil) {
+        Objects.requireNonNull(username, "username cannot be null");
+        Objects.requireNonNull(now, "Current time cannot be null");
+        Objects.requireNonNull(lockedUntil, "Lock expiry cannot be null");
+
+        if (username.isBlank()) {
+            return 0;
+        }
+
+        if (maxFailedAttempts < 1) {
+            throw new IllegalArgumentException("Maximum failed attempts must be positive");
+        }
+
+        if (!lockedUntil.isAfter(now)) {
+            throw new IllegalArgumentException("Lock expiry must be after the current time");
+        }
+
+        return jdbcTemplate.update(
+                SQL.get("recordFailedPinAttempts"),
+                Timestamp.from(now),
+                Timestamp.from(now),
+                maxFailedAttempts,
+                Timestamp.from(lockedUntil),
+                Timestamp.from(now),
+                Timestamp.from(now),
+                normalizeUsername(username),
+                Timestamp.from(now)
+        );
+    }
+
+    @Override
+    public int resetFailedPinAttempts(String username, Instant now) {
+        Objects.requireNonNull(username, "Username cannot be null");
+        Objects.requireNonNull(now, "Current time cannot be null");
+
+        if (username.isBlank()) {
+            return 0;
+        }
+
+        return jdbcTemplate.update(
+                SQL.get("resetFailedPinAttempts"),
+                Timestamp.from(now),
+                normalizeUsername(username),
+                Timestamp.from(now)
+        );
+    }
+
     private static AppUser mapAppUser(ResultSet rs, int rowNum)
             throws SQLException {
         UUID id = rs.getObject("id", UUID.class);

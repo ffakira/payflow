@@ -5,6 +5,7 @@ import dev.akira.payflow.auth.adapter.in.web.security.LoginFailureHandler;
 import dev.akira.payflow.auth.adapter.in.web.security.LoginSuccessHandler;
 import dev.akira.payflow.auth.adapter.out.security.AppUserDetailsService;
 import dev.akira.payflow.auth.application.FailedLoginPolicy;
+import dev.akira.payflow.auth.application.PinVerificationPolicy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -74,5 +75,10 @@ public class SecurityConfiguration {
                 5,
                 Duration.ofMinutes(15)
         );
+    }
+
+    @Bean
+    PinVerificationPolicy pinVerificationPolicy() {
+        return new PinVerificationPolicy(3, Duration.ofMinutes(15));
     }
 }
