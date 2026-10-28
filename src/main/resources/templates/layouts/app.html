@@ -98,19 +98,23 @@
         }
     };
 
-    // Read flash attributes from the DOM and trigger toasts
+    // 1. Read flash attributes from the DOM and trigger toasts (Standard Page Loads)
     document.addEventListener('DOMContentLoaded', () => {
         const flashData = document.getElementById('flash-data');
         if (flashData) {
             const successMsg = flashData.getAttribute('data-success');
             const errorMsg = flashData.getAttribute('data-error');
 
-            if (successMsg) {
-                window.showToast(successMsg, 'success');
-            }
-            if (errorMsg) {
-                window.showToast(errorMsg, 'danger');
-            }
+            if (successMsg) window.showToast(successMsg, 'success');
+            if (errorMsg) window.showToast(errorMsg, 'danger');
+        }
+    });
+
+    // 2. Listen for HTMX-triggered toasts (AJAX Submissions)
+    document.addEventListener('showToast', function(evt) {
+        // HTMX passes the JSON payload into evt.detail
+        if (evt.detail) {
+            window.showToast(evt.detail.message, evt.detail.type || 'info');
         }
     });
 </script>

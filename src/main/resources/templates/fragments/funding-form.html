@@ -1,0 +1,187 @@
+<form class="funding-form"
+      th:fragment="funding-form"
+      id="funding-form"
+      x-data="fundingForm"
+      th:action="@{/sandbox/funding}"
+      th:object="${fundingForm}"
+      method="post"
+      novalidate
+      th:hx-post="@{/sandbox/funding}"
+      hx-target="#funding-form"
+      hx-swap="outerHTML"
+      @submit="validateForm($event)">
+
+    <input type="hidden" th:field="*{idempotencyKey}">
+
+    <div class="funding-form__errors"
+         th:if="${#fields.hasGlobalErrors()}"
+         role="alert">
+        <p th:each="error : ${#fields.globalErrors()}"
+           th:text="${error}"></p>
+    </div>
+
+    <!-- Customer account -->
+    <div class="form-field">
+        <label class="form-label" for="accountId-trigger">
+            Customer account
+        </label>
+
+        <div class="custom-select"
+             x-ref="accountWrapper"
+             @click.away="closeDropdown()"
+             :class="{ 'custom-select--error': accountError }">
+
+            <select class="custom-select__native"
+                    x-ref="nativeSelect"
+                    id="accountId"
+                    th:field="*{accountId}"
+                    th:attr="aria-invalid=${#fields.hasErrors('accountId')}"
+                    required>
+                <option value="">Choose an account</option>
+                <option th:each="overview : ${accounts}"
+                        th:value="${overview.account.id.value}"
+                        th:data-currency="${overview.account.currency.value}"
+                        th:text="${overview.account.currency.value + ' · ' + overview.account.accountNumber}">
+                </option>
+            </select>
+
+            <button type="button"
+                    class="custom-select__trigger"
+                    x-ref="trigger"
+                    id="accountId-trigger"
+                    aria-haspopup="listbox"
+                    @click="toggleDropdown()"
+                    :aria-expanded="isOpen">
+
+                <div class="custom-select__value">
+                    <span class="custom-select__placeholder" x-show="selectedValue === ''">
+                        Choose an account
+                    </span>
+
+                    <div class="u-flex u-items-center u-gap-3"
+                         x-show="selectedValue !== ''"
+                         x-cloak>
+                        <span class="custom-select__currency" x-text="selectedCurrency"></span>
+                        <span class="custom-select__details">
+                            <span class="custom-select__title" x-text="selectedAccountNumber"></span>
+                            <span class="custom-select__subtitle" x-text="selectedCurrency + ' account'"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <svg class="custom-select__arrow"
+                     :class="{ 'rotate-180': isOpen }"
+                     viewBox="0 0 24 24" width="16" height="16"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </button>
+
+            <div class="custom-select__panel"
+                 x-show="isOpen"
+                 x-cloak>
+
+                <div class="custom-select__search">
+                    <div class="custom-select__search-wrapper">
+                        <svg class="custom-select__search-icon"
+                             viewBox="0 0 24 24" width="16" height="16"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                        <input type="text"
+                               x-ref="searchInput"
+                               x-model="search"
+                               placeholder="Search accounts or currency..."
+                               aria-label="Search accounts"
+                               autocomplete="off">
+                    </div>
+                </div>
+
+                <ul class="custom-select__options" role="listbox">
+                    <li class="custom-select__option"
+                        th:each="overview : ${accounts}"
+                        role="option"
+                        th:attr="data-value=${overview.account.id.value}, data-currency=${overview.account.currency.value}, data-number=${overview.account.accountNumber}"
+                        @click="selectAccount($el)"
+                        :aria-selected="isSelected('${overview.account.id.value}')"
+                        x-show="matchesSearch('${overview.account.currency.value} ${overview.account.accountNumber}')">
+
+                        <span class="custom-select__currency" th:text="${overview.account.currency.value}">Currency</span>
+                        <span class="custom-select__details">
+                            <span class="custom-select__title" th:text="${overview.account.accountNumber}">Account Number</span>
+                            <span class="custom-select__subtitle" th:text="${overview.account.currency.value + ' account'}">Currency account</span>
+                        </span>
+                        <svg class="custom-select__check"
+                             viewBox="0 0 16 16" width="20" height="20"
+                             fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m3 8 3 3 7-7"/>
+                        </svg>
+                    </li>
+
+                    <li x-show="!hasVisibleAccounts()" x-cloak class="u-p-4 u-text-center u-text-muted">
+                        No accounts found.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="form-error"
+           th:if="${#fields.hasErrors('accountId')}"
+           th:errors="*{accountId}"></p>
+        <p class="form-error" x-show="accountError" x-text="accountError" role="alert" x-cloak></p>
+
+        <p class="form-hint">
+            Select the customer account that should receive the deposit.
+        </p>
+    </div>
+
+    <!-- Deposit amount -->
+    <div class="form-field">
+        <label class="form-label" for="amount">
+            Deposit amount
+        </label>
+
+        <div class="funding-amount-wrapper"
+             :data-currency="selectedCurrency !== '' ? selectedCurrency : null">
+
+            <span class="funding-amount-prefix"
+                  x-text="selectedPrefix"
+                  aria-hidden="true"></span>
+
+            <input class="input funding-amount-input"
+                   x-ref="amountInput"
+                   id="amount"
+                   type="number"
+                   min="0.01"
+                   max="999999999999.99"
+                   step="0.01"
+                   th:field="*{amount}"
+                   th:attr="aria-invalid=${#fields.hasErrors('amount')}"
+                   placeholder="0.00"
+                   inputmode="decimal"
+                   required
+                   @input="amountError = ''">
+
+            <span class="funding-amount-suffix"
+                  x-text="selectedSuffix"
+                  aria-hidden="true"></span>
+        </div>
+
+        <p class="form-error"
+           th:if="${#fields.hasErrors('amount')}"
+           th:errors="*{amount}"></p>
+        <p class="form-error" x-show="amountError" x-text="amountError" role="alert" x-cloak></p>
+
+        <p class="form-hint">
+            Enter the amount you'd like to deposit (e.g., 25.00).
+        </p>
+    </div>
+
+    <div class="funding-form__footer">
+        <a class="button button--secondary" th:href="@{/accounts}">Cancel</a>
+        <button class="button button--primary" type="submit">
+            Add funds
+        </button>
+    </div>
+</form>
