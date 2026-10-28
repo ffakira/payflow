@@ -1,0 +1,152 @@
+@layer components {
+    /* Numeric formatting */
+    .financial-value,
+    .account-number,
+    .transaction-reference,
+    .balance-card__amount,
+    .transaction-row__amount {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Account Balances */
+    .balance-card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        min-inline-size: 0;
+        padding: var(--space-6);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+    }
+
+    .balance-card__label {
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+    }
+
+    .balance-card__amount {
+        font-size: clamp(1.5rem, 1.2rem + 1vw, var(--text-2xl));
+        font-weight: var(--font-weight-bold);
+        letter-spacing: -0.035em;
+        overflow-wrap: anywhere;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .balance-card__currency {
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+        font-weight: var(--font-weight-medium);
+    }
+
+    /* Transactions */
+    .transaction-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .transaction-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-3);
+        padding-block: var(--space-4);
+        border-block-end: 1px solid var(--color-border);
+    }
+
+    .transaction-row:last-child {
+        border-block-end: 0;
+    }
+
+    .transaction-row__icon {
+        display: grid;
+        place-items: center;
+        inline-size: 2.75rem;
+        aspect-ratio: 1;
+        border-radius: var(--radius-md);
+        background: var(--color-surface-muted);
+        color: var(--color-text-muted);
+    }
+
+    .transaction-row__details {
+        min-inline-size: 0;
+    }
+
+    .transaction-row__title {
+        overflow: hidden;
+        font-size: var(--text-sm);
+        font-weight: var(--font-weight-medium);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .transaction-row__meta {
+        margin-block-start: var(--space-1);
+        color: var(--color-text-muted);
+        font-size: var(--text-xs);
+    }
+
+    .transaction-row__amount {
+        text-align: end;
+        font-size: var(--text-sm);
+        font-weight: var(--font-weight-semibold);
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+    }
+
+    .amount--positive { color: var(--color-success); }
+    .amount--negative { color: var(--color-danger); }
+
+    /* Tables */
+    .table-wrapper {
+        inline-size: 100%;
+        overflow-x: auto;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+    }
+
+    .table {
+        inline-size: 100%;
+        text-align: start;
+        font-size: var(--text-sm);
+    }
+
+    .table th {
+        padding: var(--space-3) var(--space-4);
+        background: var(--color-surface-muted);
+        color: var(--color-text-muted);
+        font-size: var(--text-xs);
+        font-weight: var(--font-weight-semibold);
+        text-align: start;
+        white-space: nowrap;
+    }
+
+    .table td {
+        padding: var(--space-4);
+        border-block-start: 1px solid var(--color-border);
+        vertical-align: middle;
+    }
+
+    .table tbody tr {
+        transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .table tbody tr:hover {
+        background: var(--color-surface-hover);
+    }
+
+    .table .numeric {
+        text-align: end;
+        font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 600px) {
+        .balance-card { padding: var(--space-4); }
+        .transaction-row { gap: var(--space-2); }
+        .transaction-row__icon { inline-size: 2.25rem; }
+        .table th, .table td { padding: var(--space-3); }
+    }
+}

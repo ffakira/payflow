@@ -1,91 +1,299 @@
-
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layouts/app :: layout(~{::content}, 'Add funds', 'funding')}">
+      th:replace="~{layouts/app :: layout(~{::content}, 'Add funds', 'accounts')}">
 <body>
 <th:block th:fragment="content">
-    <div th:replace="~{fragments/page-header :: pageHeader(
-        'Add funds',
-        'Simulate a deposit into one of your PayFlow sandbox accounts.'
-    )}"></div>
+    <div class="funding-page">
 
-    <div th:if="${fundingSuccess}" class="card u-mb-6" role="status">
-        <p class="amount--positive" th:text="${fundingSuccess}">Funds added.</p>
-    </div>
-
-    <section class="card" aria-labelledby="funding-form-heading">
-        <div class="card__header">
-            <div>
-                <h2 class="card__title" id="funding-form-heading">Sandbox deposit</h2>
-                <p class="card__description">
-                    This creates a ledger deposit. No real money is moved.
-                </p>
-            </div>
-            <span class="badge badge--warning">Sandbox only</span>
+        <div class="funding-page__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round">
+                <path d="M12 5v14M5 12h14"/>
+            </svg>
         </div>
 
-        <form th:action="@{/sandbox/funding}"
-              th:object="${fundingForm}"
-              method="post">
+        <div th:replace="~{fragments/page-header :: pageHeader(
+            'Add funds',
+            'Simulate a deposit into one of your PayFlow sandbox accounts.'
+        )}"></div>
 
-            <input type="hidden" th:field="*{idempotencyKey}">
+        <div th:if="${successMessage}"
+             class="funding-feedback funding-feedback--success u-mb-6"
+             role="status">
+            <span class="badge badge--success">Deposit recorded</span>
+            <p th:text="${successMessage}">Funds added.</p>
+        </div>
 
-            <div class="form-error u-mb-4"
-                 th:if="${#fields.hasGlobalErrors() or #fields.hasErrors('*')}"
-                 role="alert">
-                <p th:each="error : ${#fields.globalErrors()}"
-                   th:text="${error}"></p>
-            </div>
+        <div class="funding-layout">
+            <section class="card funding-card"
+                     aria-labelledby="funding-form-heading">
+                <div class="card__header funding-card__header">
+                    <div>
+                        <h2 class="card__title" id="funding-form-heading">
+                            Sandbox deposit
+                        </h2>
+                        <p class="card__description">
+                            Add test funds to a customer account.
+                        </p>
+                    </div>
+                    <span class="badge badge--warning">Sandbox only</span>
+                </div>
 
-            <div class="form-field u-mb-5">
-                <label class="form-label" for="accountId">Customer account</label>
-                <select class="select"
-                        id="accountId"
-                        th:field="*{accountId}"
-                        required>
-                    <option value="">Choose an account</option>
-                    <option th:each="overview : ${accounts}"
-                            th:value="${overview.account.id.value}"
-                            th:text="${overview.account.currency.value + ' · ' + overview.account.accountNumber}">
-                    </option>
-                </select>
-                <p class="form-error"
-                   th:if="${#fields.hasErrors('accountId')}"
-                   th:errors="*{accountId}"></p>
-                <p class="form-hint">Only customer accounts are listed.</p>
-            </div>
+                <form class="funding-form"
+                      th:action="@{/sandbox/funding}"
+                      th:object="${fundingForm}"
+                      method="post">
 
-            <div class="form-field u-mb-6">
-                <label class="form-label" for="amount">Amount</label>
-                <input class="input"
-                       id="amount"
-                       type="number"
-                       min="0.01"
-                       max="999999999999.99"
-                       step="0.01"
-                       th:field="*{amount}"
-                       placeholder="100.00"
-                       inputmode="decimal"
-                       required>
-                <p class="form-error"
-                   th:if="${#fields.hasErrors('amount')}"
-                   th:errors="*{amount}"></p>
-                <p class="form-hint">
-                    Enter a positive amount with up to two decimal places.
+                    <input type="hidden" th:field="*{idempotencyKey}">
+
+                    <div class="funding-form__errors"
+                         th:if="${#fields.hasGlobalErrors()}"
+                         role="alert">
+                        <p th:each="error : ${#fields.globalErrors()}"
+                           th:text="${error}"></p>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label" for="accountId-trigger">
+                            Customer account
+                        </label>
+
+                        <div class="custom-select"
+                             id="account-select-wrapper"
+                             th:classappend="${#fields.hasErrors('accountId')} ? 'custom-select--error'">
+
+                            <!-- Hidden native select -->
+                            <select class="custom-select__native"
+                                    id="accountId"
+                                    th:field="*{accountId}"
+                                    th:attr="aria-invalid=${#fields.hasErrors('accountId')}"
+                                    required>
+                                <option value="">Choose an account</option>
+                                <option th:each="overview : ${accounts}"
+                                        th:value="${overview.account.id.value}"
+                                        th:data-value="${overview.account.id.value}"
+                                        th:text="${overview.account.currency.value + ' · ' + overview.account.accountNumber}">
+                                </option>
+                            </select>
+
+                            <!-- Custom Trigger -->
+                            <button type="button" class="custom-select__trigger" id="accountId-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <div class="custom-select__value">
+                                    <span class="custom-select__placeholder">Choose an account</span>
+                                </div>
+                                <svg class="custom-select__arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m6 9 6 6 6-6"/>
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Panel -->
+                            <div class="custom-select__panel u-hidden">
+                                <div class="custom-select__search">
+                                    <div class="custom-select__search-wrapper">
+                                        <svg class="custom-select__search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                            <circle cx="11" cy="11" r="7"></circle>
+                                            <path d="m21 21-4.3-4.3"></path>
+                                        </svg>
+                                        <input type="text" placeholder="Search accounts or currency..." aria-label="Search accounts" autocomplete="off">
+                                    </div>
+                                </div>
+                                <ul class="custom-select__options" role="listbox">
+                                    <th:block th:each="overview : ${accounts}">
+                                        <li class="custom-select__option"
+                                            role="option"
+                                            th:attr="data-value=${overview.account.id.value}">
+
+                                            <span class="custom-select__currency" th:text="${overview.account.currency.value}">USD</span>
+
+                                            <span class="custom-select__details">
+                                                <span class="custom-select__title" th:text="${overview.account.accountNumber}">Account Number</span>
+                                                <span class="custom-select__subtitle" th:text="${overview.account.currency.value + ' account'}">USD account</span>
+                                            </span>
+
+                                            <!-- Fixed: Added explicit width and height to the SVG -->
+                                            <svg class="custom-select__check" viewBox="0 0 16 16" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="m3 8 3 3 7-7"/>
+                                            </svg>
+                                        </li>
+                                    </th:block>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <p class="form-error"
+                           th:if="${#fields.hasErrors('accountId')}"
+                           th:errors="*{accountId}"></p>
+
+                        <p class="form-hint">
+                            Select the customer account that should receive the deposit.
+                        </p>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label" for="amount">
+                            Deposit amount
+                        </label>
+
+                        <div class="funding-amount-wrapper">
+                            <span class="funding-amount-prefix" aria-hidden="true">$</span>
+                            <input class="input funding-amount-input"
+                                   id="amount"
+                                   type="number"
+                                   min="0.01"
+                                   max="999999999999.99"
+                                   step="0.01"
+                                   th:field="*{amount}"
+                                   th:attr="aria-invalid=${#fields.hasErrors('amount')}"
+                                   placeholder="0.00"
+                                   inputmode="decimal"
+                                   required>
+                            <span class="funding-amount-suffix" aria-hidden="true">USD</span>
+                        </div>
+
+                        <p class="form-error"
+                           th:if="${#fields.hasErrors('amount')}"
+                           th:errors="*{amount}"></p>
+
+                        <p class="form-hint">
+                            Enter the amount you'd like to deposit (e.g., 25.00).
+                        </p>
+                    </div>
+
+                    <div class="funding-form__footer">
+                        <a class="button button--secondary"
+                           th:href="@{/accounts}">
+                            Cancel
+                        </a>
+
+                        <button class="button button--primary"
+                                type="submit">
+                            Add funds
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <aside class="funding-info"
+                   aria-labelledby="funding-info-heading">
+                <div class="funding-info__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22"
+                         fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                </div>
+
+                <h2 class="funding-info__title" id="funding-info-heading">
+                    Safe to experiment
+                </h2>
+
+                <p class="funding-info__description">
+                    Sandbox funding is intended for testing. It creates a
+                    simulated deposit in PayFlow and does not move real money.
                 </p>
-            </div>
 
-            <div class="cluster">
-                <button class="button button--primary" type="submit">
-                    Add funds
-                </button>
-                <a class="button button--secondary" th:href="@{/}">
-                    Cancel
-                </a>
-            </div>
-        </form>
-    </section>
+                <hr class="funding-info__divider">
+
+                <dl class="funding-info__details">
+                    <div>
+                        <dt>Environment</dt>
+                        <dd><span class="badge badge--warning">Sandbox</span></dd>
+                    </div>
+                    <div>
+                        <dt>Purpose</dt>
+                        <dd>Test account funding</dd>
+                    </div>
+                </dl>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Custom Dropdown JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wrapper = document.getElementById('account-select-wrapper');
+            if (!wrapper) return;
+
+            const nativeSelect = wrapper.querySelector('.custom-select__native');
+            const trigger = wrapper.querySelector('.custom-select__trigger');
+            const panel = wrapper.querySelector('.custom-select__panel');
+            const searchInput = panel.querySelector('input');
+            const options = panel.querySelectorAll('.custom-select__option');
+            const valueDisplay = trigger.querySelector('.custom-select__value');
+
+            function updateDisplay() {
+                const selectedOption = nativeSelect.options[nativeSelect.selectedIndex];
+                if (selectedOption && selectedOption.value) {
+                    const matchingLi = Array.from(options).find(li => li.dataset.value === selectedOption.value);
+                    if (matchingLi) {
+                        // Clone the inner HTML but remove the checkmark for the trigger display
+                        const clone = matchingLi.cloneNode(true);
+                        const check = clone.querySelector('.custom-select__check');
+                        if (check) check.remove();
+
+                        valueDisplay.innerHTML = clone.innerHTML;
+                        valueDisplay.classList.remove('custom-select__placeholder');
+
+                        options.forEach(o => o.setAttribute('aria-selected', 'false'));
+                        matchingLi.setAttribute('aria-selected', 'true');
+                    }
+                } else {
+                    valueDisplay.innerHTML = '<span class="custom-select__placeholder">Choose an account</span>';
+                }
+            }
+            updateDisplay();
+
+            trigger.addEventListener('click', () => {
+                const isOpen = !panel.classList.contains('u-hidden');
+                if (isOpen) close(); else open();
+            });
+
+            function open() {
+                panel.classList.remove('u-hidden');
+                trigger.setAttribute('aria-expanded', 'true');
+                searchInput.value = '';
+                options.forEach(opt => opt.classList.remove('u-hidden'));
+                setTimeout(() => searchInput.focus(), 50);
+            }
+
+            function close() {
+                panel.classList.add('u-hidden');
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                options.forEach(opt => {
+                    const text = opt.textContent.toLowerCase();
+                    opt.classList.toggle('u-hidden', !text.includes(term));
+                });
+            });
+
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    nativeSelect.value = opt.dataset.value;
+                    nativeSelect.dispatchEvent(new Event('change'));
+                    updateDisplay();
+                    close();
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) close();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !panel.classList.contains('u-hidden')) {
+                    close();
+                    trigger.focus();
+                }
+            });
+        });
+    </script>
 </th:block>
 </body>
 </html>

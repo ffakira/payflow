@@ -1,0 +1,47 @@
+@layer components {
+    .card {
+        min-inline-size: 0;
+        padding: var(--space-6);
+        background: var(--color-surface);
+        border: var(--border-width) solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+    }
+
+    .card--interactive {
+        transition: background-color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard),
+        box-shadow var(--duration-fast) var(--ease-standard),
+        transform var(--duration-fast) var(--ease-standard);
+    }
+
+    .card--interactive:hover {
+        background: var(--color-surface-hover);
+        box-shadow: var(--shadow-card-hover);
+    }
+
+    .card__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        margin-block-end: var(--space-4);
+    }
+
+    .card__title {
+        font-size: var(--text-base);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .card__description {
+        margin-block-start: var(--space-1);
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+    }
+
+    @media (max-width: 600px) {
+        .card {
+            padding: var(--space-4);
+        }
+    }
+}

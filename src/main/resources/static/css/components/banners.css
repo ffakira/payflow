@@ -1,0 +1,28 @@
+@layer components {
+    .environment-banner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: #fff3cd;
+        color: #664d03;
+        border-bottom: 1px solid #ffecb5;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .environment-banner strong {
+        letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 600px) {
+        .environment-banner {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: var(--space-1);
+            padding: var(--space-3) var(--space-4);
+        }
+    }
+}

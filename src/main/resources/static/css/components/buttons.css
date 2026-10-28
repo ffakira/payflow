@@ -1,0 +1,75 @@
+@layer components {
+    .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-block-size: 2.75rem;
+        padding: var(--space-2) var(--space-4);
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        font-size: var(--text-sm);
+        font-weight: var(--font-weight-semibold);
+        line-height: 1.25;
+        text-align: center;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background-color var(--duration-fast) var(--ease-standard),
+        color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard),
+        box-shadow var(--duration-fast) var(--ease-standard);
+        cursor: pointer;
+    }
+
+    .button:disabled,
+    .button[aria-disabled="true"] {
+        opacity: 0.55;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .button--primary {
+        background: var(--color-brand);
+        color: var(--color-brand-on);
+    }
+
+    .button--primary:hover {
+        background: var(--color-brand-hover);
+    }
+
+    .button--secondary {
+        background: var(--color-surface);
+        color: var(--color-text);
+        border-color: var(--color-border-strong);
+    }
+
+    .button--secondary:hover {
+        background: var(--color-surface-hover);
+    }
+
+    .button--ghost {
+        background: transparent;
+        color: var(--color-text-muted);
+    }
+
+    .button--ghost:hover {
+        background: var(--color-surface-hover);
+        color: var(--color-text);
+    }
+
+    .button--danger {
+        background: var(--color-danger);
+        color: var(--color-text-inverse);
+    }
+
+    .button--small {
+        min-block-size: 2.25rem;
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+    }
+
+    .button--icon {
+        inline-size: 2.75rem;
+        padding-inline: 0;
+    }
+}
