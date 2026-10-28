@@ -14,30 +14,104 @@
     <script th:src="@{/js/lib/htmx.min.js}" defer></script>
 </head>
 <body>
-    <div class="sidebar-layout">
-        <aside class="sidebar">
-            <div th:replace="~{fragments/sidebar :: sidebar(${activePage})}">
-                Sidebar
-            </div>
-        </aside>
+<!-- TOAST CONTAINER -->
+<div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-        <div class="u-min-width-0">
-            <div th:if="${sandboxMode}"
-                class="environment-banner"
-                role="status"
-                aria-label="Sandbox environment">
-                <strong>SANDBOX MODE</strong>
-                <span>
+<!-- HIDDEN FLASH DATA (Passes data from Thymeleaf to JS safely) -->
+<div id="flash-data"
+     th:attr="data-success=${successMessage}, data-error=${errorMessage}"
+     style="display: none;">
+</div>
+
+<div class="sidebar-layout">
+    <aside class="sidebar">
+        <div th:replace="~{fragments/sidebar :: sidebar(${activePage})}">
+            Sidebar
+        </div>
+    </aside>
+
+    <div class="u-min-width-0">
+        <div th:if="${sandboxMode}"
+             class="environment-banner"
+             role="status"
+             aria-label="Sandbox environment">
+            <strong>SANDBOX MODE</strong>
+            <span>
                     You're currently on SANDBOX. All balances and transactions are
                     simulated. No real money is moved.
                 </span>
-            </div>
-            <main class="main-content">
-                <div th:replace="${content}">
-                    Page content
-                </div>
-            </main>
         </div>
+        <main class="main-content">
+            <div th:replace="${content}">
+                Page content
+            </div>
+        </main>
     </div>
+</div>
+
+<script>
+    window.showToast = function(message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast toast--${type}`;
+        toast.setAttribute('role', 'alert');
+
+        // Icons
+        let iconSvg = '';
+        if (type === 'success') {
+            iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>`;
+        } else if (type === 'danger') {
+            iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4m0 4h.01M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>`;
+        } else {
+            iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>`;
+        }
+
+        // Build HTML
+        toast.innerHTML = `
+                <div class="toast__icon">${iconSvg}</div>
+                <div class="toast__content">
+                    <p class="toast__message">${message}</p>
+                </div>
+                <button type="button" class="toast__close" aria-label="Close">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+            `;
+
+        container.appendChild(toast);
+
+        // Close function
+        const closeBtn = toast.querySelector('.toast__close');
+        const removeToast = () => {
+            toast.classList.add('toast--closing');
+            toast.addEventListener('animationend', () => toast.remove());
+        };
+
+        closeBtn.addEventListener('click', removeToast);
+
+        // Auto dismiss
+        if (duration > 0) {
+            setTimeout(removeToast, duration);
+        }
+    };
+
+    // Read flash attributes from the DOM and trigger toasts
+    document.addEventListener('DOMContentLoaded', () => {
+        const flashData = document.getElementById('flash-data');
+        if (flashData) {
+            const successMsg = flashData.getAttribute('data-success');
+            const errorMsg = flashData.getAttribute('data-error');
+
+            if (successMsg) {
+                window.showToast(successMsg, 'success');
+            }
+            if (errorMsg) {
+                window.showToast(errorMsg, 'danger');
+            }
+        }
+    });
+</script>
 </body>
 </html>

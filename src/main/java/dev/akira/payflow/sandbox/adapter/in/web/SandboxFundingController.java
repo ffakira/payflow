@@ -81,9 +81,9 @@ public class SandboxFundingController {
                     new FundSandboxAccountCommand(accountId, amount, form.getIdempotencyKey())
             );
 
-            redirectAttributes.addAttribute(
+            redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Funds added successfuly."
+                    "Funds added successfully."
             );
 
             return "redirect:/sandbox/funding";

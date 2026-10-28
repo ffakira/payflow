@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layouts/app :: layout(~{::content}, 'Add funds', 'accounts')}">
+      th:replace="~{layouts/app :: layout(~{::content}, 'Add funds', 'funding')}">
 <body>
 <th:block th:fragment="content">
     <div class="funding-page">
@@ -19,16 +19,10 @@
             'Simulate a deposit into one of your PayFlow sandbox accounts.'
         )}"></div>
 
-        <div th:if="${successMessage}"
-             class="funding-feedback funding-feedback--success u-mb-6"
-             role="status">
-            <span class="badge badge--success">Deposit recorded</span>
-            <p th:text="${successMessage}">Funds added.</p>
-        </div>
-
         <div class="funding-layout">
             <section class="card funding-card"
                      aria-labelledby="funding-form-heading">
+
                 <div class="card__header funding-card__header">
                     <div>
                         <h2 class="card__title" id="funding-form-heading">
@@ -38,13 +32,16 @@
                             Add test funds to a customer account.
                         </p>
                     </div>
+
                     <span class="badge badge--warning">Sandbox only</span>
                 </div>
 
                 <form class="funding-form"
                       th:action="@{/sandbox/funding}"
                       th:object="${fundingForm}"
-                      method="post">
+                      method="post"
+                      novalidate
+                      id="funding-form">
 
                     <input type="hidden" th:field="*{idempotencyKey}">
 
@@ -55,6 +52,7 @@
                            th:text="${error}"></p>
                     </div>
 
+                    <!-- Customer account -->
                     <div class="form-field">
                         <label class="form-label" for="accountId-trigger">
                             Customer account
@@ -64,7 +62,6 @@
                              id="account-select-wrapper"
                              th:classappend="${#fields.hasErrors('accountId')} ? 'custom-select--error'">
 
-                            <!-- Hidden native select -->
                             <select class="custom-select__native"
                                     id="accountId"
                                     th:field="*{accountId}"
@@ -73,47 +70,57 @@
                                 <option value="">Choose an account</option>
                                 <option th:each="overview : ${accounts}"
                                         th:value="${overview.account.id.value}"
-                                        th:data-value="${overview.account.id.value}"
+                                        th:data-currency="${overview.account.currency.value}"
                                         th:text="${overview.account.currency.value + ' · ' + overview.account.accountNumber}">
                                 </option>
                             </select>
 
-                            <!-- Custom Trigger -->
-                            <button type="button" class="custom-select__trigger" id="accountId-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <button type="button"
+                                    class="custom-select__trigger"
+                                    id="accountId-trigger"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false">
                                 <div class="custom-select__value">
-                                    <span class="custom-select__placeholder">Choose an account</span>
+                                    <span class="custom-select__placeholder">
+                                        Choose an account
+                                    </span>
                                 </div>
-                                <svg class="custom-select__arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg class="custom-select__arrow"
+                                     viewBox="0 0 24 24" width="16" height="16"
+                                     fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="m6 9 6 6 6-6"/>
                                 </svg>
                             </button>
 
-                            <!-- Dropdown Panel -->
                             <div class="custom-select__panel u-hidden">
                                 <div class="custom-select__search">
                                     <div class="custom-select__search-wrapper">
-                                        <svg class="custom-select__search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                        <svg class="custom-select__search-icon"
+                                             viewBox="0 0 24 24" width="16" height="16"
+                                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                                             <circle cx="11" cy="11" r="7"></circle>
                                             <path d="m21 21-4.3-4.3"></path>
                                         </svg>
-                                        <input type="text" placeholder="Search accounts or currency..." aria-label="Search accounts" autocomplete="off">
+                                        <input type="text"
+                                               placeholder="Search accounts or currency..."
+                                               aria-label="Search accounts"
+                                               autocomplete="off">
                                     </div>
                                 </div>
+
                                 <ul class="custom-select__options" role="listbox">
                                     <th:block th:each="overview : ${accounts}">
                                         <li class="custom-select__option"
                                             role="option"
                                             th:attr="data-value=${overview.account.id.value}">
-
-                                            <span class="custom-select__currency" th:text="${overview.account.currency.value}">USD</span>
-
+                                            <span class="custom-select__currency" th:text="${overview.account.currency.value}">Currency</span>
                                             <span class="custom-select__details">
                                                 <span class="custom-select__title" th:text="${overview.account.accountNumber}">Account Number</span>
-                                                <span class="custom-select__subtitle" th:text="${overview.account.currency.value + ' account'}">USD account</span>
+                                                <span class="custom-select__subtitle" th:text="${overview.account.currency.value + ' account'}">Currency account</span>
                                             </span>
-
-                                            <!-- Fixed: Added explicit width and height to the SVG -->
-                                            <svg class="custom-select__check" viewBox="0 0 16 16" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                            <svg class="custom-select__check"
+                                                 viewBox="0 0 16 16" width="20" height="20"
+                                                 fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="m3 8 3 3 7-7"/>
                                             </svg>
                                         </li>
@@ -122,22 +129,30 @@
                             </div>
                         </div>
 
+                        <!-- Server-side error -->
                         <p class="form-error"
                            th:if="${#fields.hasErrors('accountId')}"
                            th:errors="*{accountId}"></p>
+
+                        <!-- Client-side error -->
+                        <p class="form-error u-hidden" id="account-client-error" role="alert"></p>
 
                         <p class="form-hint">
                             Select the customer account that should receive the deposit.
                         </p>
                     </div>
 
+                    <!-- Deposit amount with dynamic currency -->
                     <div class="form-field">
                         <label class="form-label" for="amount">
                             Deposit amount
                         </label>
 
-                        <div class="funding-amount-wrapper">
-                            <span class="funding-amount-prefix" aria-hidden="true">$</span>
+                        <div class="funding-amount-wrapper" id="funding-amount-wrapper">
+                            <span class="funding-amount-prefix"
+                                  id="funding-amount-prefix"
+                                  aria-hidden="true"></span>
+
                             <input class="input funding-amount-input"
                                    id="amount"
                                    type="number"
@@ -149,18 +164,26 @@
                                    placeholder="0.00"
                                    inputmode="decimal"
                                    required>
-                            <span class="funding-amount-suffix" aria-hidden="true">USD</span>
+
+                            <span class="funding-amount-suffix"
+                                  id="funding-amount-suffix"
+                                  aria-hidden="true"></span>
                         </div>
 
+                        <!-- Server-side error -->
                         <p class="form-error"
                            th:if="${#fields.hasErrors('amount')}"
                            th:errors="*{amount}"></p>
+
+                        <!-- Client-side error -->
+                        <p class="form-error u-hidden" id="amount-client-error" role="alert"></p>
 
                         <p class="form-hint">
                             Enter the amount you'd like to deposit (e.g., 25.00).
                         </p>
                     </div>
 
+                    <!-- Form actions -->
                     <div class="funding-form__footer">
                         <a class="button button--secondary"
                            th:href="@{/accounts}">
@@ -175,13 +198,13 @@
                 </form>
             </section>
 
+            <!-- Sandbox information -->
             <aside class="funding-info"
                    aria-labelledby="funding-info-heading">
                 <div class="funding-info__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="22" height="22"
                          fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round"
-                         stroke-linejoin="round">
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z"/>
                         <path d="m9 12 2 2 4-4"/>
                     </svg>
@@ -212,7 +235,6 @@
         </div>
     </div>
 
-    <!-- Custom Dropdown JS -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const wrapper = document.getElementById('account-select-wrapper');
@@ -225,39 +247,137 @@
             const options = panel.querySelectorAll('.custom-select__option');
             const valueDisplay = trigger.querySelector('.custom-select__value');
 
+            const amountWrapper = document.getElementById('funding-amount-wrapper');
+            const amountPrefix = document.getElementById('funding-amount-prefix');
+            const amountSuffix = document.getElementById('funding-amount-suffix');
+            const amountInput = document.getElementById('amount');
+
+            // Error message containers
+            const accountError = document.getElementById('account-client-error');
+            const amountError = document.getElementById('amount-client-error');
+            const form = document.getElementById('funding-form');
+
+            // Clear errors on interaction
+            nativeSelect.addEventListener('change', () => {
+                nativeSelect.setAttribute('aria-invalid', 'false');
+                wrapper.classList.remove('custom-select--error');
+                accountError.classList.add('u-hidden');
+                accountError.textContent = '';
+            });
+
+            amountInput.addEventListener('input', () => {
+                amountInput.setAttribute('aria-invalid', 'false');
+                amountError.classList.add('u-hidden');
+                amountError.textContent = '';
+            });
+
+            // Client-side validation on submit
+            form.addEventListener('submit', (e) => {
+                let isValid = true;
+
+                // Validate Account
+                if (!nativeSelect.checkValidity() || !nativeSelect.value) {
+                    isValid = false;
+                    nativeSelect.setAttribute('aria-invalid', 'true');
+                    wrapper.classList.add('custom-select--error');
+                    accountError.textContent = 'Please select a customer account.';
+                    accountError.classList.remove('u-hidden');
+                }
+
+                // Validate Amount
+                if (!amountInput.checkValidity()) {
+                    isValid = false;
+                    amountInput.setAttribute('aria-invalid', 'true');
+
+                    let msg = 'Please enter a valid amount.';
+                    if (amountInput.validity.valueMissing) {
+                        msg = 'Please enter an amount to deposit.';
+                    } else if (amountInput.validity.rangeOverflow) {
+                        msg = 'Amount is too large. Maximum is 999,999,999,999.99.';
+                    } else if (amountInput.validity.rangeUnderflow) {
+                        msg = 'Amount must be at least 0.01.';
+                    } else if (amountInput.validity.stepMismatch) {
+                        msg = 'Please use a maximum of 2 decimal places.';
+                    }
+
+                    amountError.textContent = msg;
+                    amountError.classList.remove('u-hidden');
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    // Focus the first invalid element
+                    if (accountError.textContent) {
+                        trigger.focus();
+                    } else if (amountError.textContent) {
+                        amountInput.focus();
+                    }
+                }
+            });
+
+            /**
+             * Custom Dropdown Logic
+             */
             function updateDisplay() {
                 const selectedOption = nativeSelect.options[nativeSelect.selectedIndex];
+
                 if (selectedOption && selectedOption.value) {
-                    const matchingLi = Array.from(options).find(li => li.dataset.value === selectedOption.value);
-                    if (matchingLi) {
-                        // Clone the inner HTML but remove the checkmark for the trigger display
-                        const clone = matchingLi.cloneNode(true);
+                    const matchingOption = Array.from(options).find(
+                        option => option.dataset.value === selectedOption.value
+                    );
+
+                    if (matchingOption) {
+                        const clone = matchingOption.cloneNode(true);
                         const check = clone.querySelector('.custom-select__check');
                         if (check) check.remove();
 
                         valueDisplay.innerHTML = clone.innerHTML;
                         valueDisplay.classList.remove('custom-select__placeholder');
 
-                        options.forEach(o => o.setAttribute('aria-selected', 'false'));
-                        matchingLi.setAttribute('aria-selected', 'true');
+                        options.forEach(option => option.setAttribute('aria-selected', 'false'));
+                        matchingOption.setAttribute('aria-selected', 'true');
                     }
                 } else {
                     valueDisplay.innerHTML = '<span class="custom-select__placeholder">Choose an account</span>';
+                    options.forEach(option => option.setAttribute('aria-selected', 'false'));
                 }
             }
-            updateDisplay();
 
-            trigger.addEventListener('click', () => {
-                const isOpen = !panel.classList.contains('u-hidden');
-                if (isOpen) close(); else open();
-            });
+            function updateAmountCurrency() {
+                const selectedOption = nativeSelect.options[nativeSelect.selectedIndex];
+                const currency = selectedOption?.dataset.currency;
+
+                if (!currency) {
+                    amountPrefix.textContent = '';
+                    amountSuffix.textContent = '';
+                    amountWrapper.removeAttribute('data-currency');
+                    return;
+                }
+
+                try {
+                    const currencyPart = new Intl.NumberFormat(undefined, {
+                        style: 'currency',
+                        currency: currency
+                    })
+                        .formatToParts(0)
+                        .find(part => part.type === 'currency');
+
+                    amountPrefix.textContent = currencyPart?.value ?? currency;
+                    amountSuffix.textContent = currency;
+                    amountWrapper.setAttribute('data-currency', currency);
+                } catch (error) {
+                    amountPrefix.textContent = currency;
+                    amountSuffix.textContent = currency;
+                    amountWrapper.setAttribute('data-currency', currency);
+                }
+            }
 
             function open() {
                 panel.classList.remove('u-hidden');
                 trigger.setAttribute('aria-expanded', 'true');
                 searchInput.value = '';
-                options.forEach(opt => opt.classList.remove('u-hidden'));
-                setTimeout(() => searchInput.focus(), 50);
+                options.forEach(option => option.classList.remove('u-hidden'));
+                searchInput.focus();
             }
 
             function close() {
@@ -265,33 +385,46 @@
                 trigger.setAttribute('aria-expanded', 'false');
             }
 
-            searchInput.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                options.forEach(opt => {
-                    const text = opt.textContent.toLowerCase();
-                    opt.classList.toggle('u-hidden', !text.includes(term));
+            nativeSelect.addEventListener('change', () => {
+                updateDisplay();
+                updateAmountCurrency();
+            });
+
+            trigger.addEventListener('click', () => {
+                const isOpen = !panel.classList.contains('u-hidden');
+                if (isOpen) close(); else open();
+            });
+
+            searchInput.addEventListener('input', event => {
+                const term = event.target.value.toLowerCase();
+                options.forEach(option => {
+                    const text = option.textContent.toLowerCase();
+                    option.classList.toggle('u-hidden', !text.includes(term));
                 });
             });
 
-            options.forEach(opt => {
-                opt.addEventListener('click', () => {
-                    nativeSelect.value = opt.dataset.value;
-                    nativeSelect.dispatchEvent(new Event('change'));
-                    updateDisplay();
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    nativeSelect.value = option.dataset.value;
+                    nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
                     close();
+                    trigger.focus();
                 });
             });
 
-            document.addEventListener('click', (e) => {
-                if (!wrapper.contains(e.target)) close();
+            document.addEventListener('click', event => {
+                if (!wrapper.contains(event.target)) close();
             });
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !panel.classList.contains('u-hidden')) {
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape' && !panel.classList.contains('u-hidden')) {
                     close();
                     trigger.focus();
                 }
             });
+
+            updateDisplay();
+            updateAmountCurrency();
         });
     </script>
 </th:block>
