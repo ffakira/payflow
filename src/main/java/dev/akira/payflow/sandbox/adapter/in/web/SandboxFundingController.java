@@ -11,11 +11,6 @@ import dev.akira.payflow.sandbox.application.port.in.FundSandboxAccountUseCase;
 import dev.akira.payflow.sandbox.application.service.FundSandboxAccountCommand;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,7 +29,6 @@ public class SandboxFundingController {
 
     private static final String FUNDING_PAGE = "sandbox/funding";
 
-    // FIXED: Pointed to the new fragment file
     private static final String FUNDING_FORM_FRAGMENT =
             "fragments/funding-form :: funding-form";
 
@@ -59,7 +52,7 @@ public class SandboxFundingController {
     @GetMapping("/sandbox/funding")
     public String showFundingPage(Model model) {
         if (!model.containsAttribute("fundingForm")) {
-            FundingForm form = new FundingForm();
+            SandboxFundingForm form = new SandboxFundingForm();
             form.setIdempotencyKey(UUID.randomUUID().toString());
             model.addAttribute("fundingForm", form);
         }
@@ -70,7 +63,7 @@ public class SandboxFundingController {
 
     @PostMapping("/sandbox/funding")
     public String fundAccount(
-            @Valid @ModelAttribute("fundingForm") FundingForm form,
+            @Valid @ModelAttribute("fundingForm") SandboxFundingForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes,
@@ -112,7 +105,7 @@ public class SandboxFundingController {
             );
 
             if (isHtmxRequest) {
-                FundingForm newForm = new FundingForm();
+                SandboxFundingForm newForm = new SandboxFundingForm();
                 newForm.setIdempotencyKey(UUID.randomUUID().toString());
 
                 model.addAttribute("fundingForm", newForm);
@@ -181,57 +174,6 @@ public class SandboxFundingController {
                     "Failed to serialize HTMX trigger payload.",
                     exception
             );
-        }
-    }
-
-    public static class FundingForm {
-
-        @NotBlank(message = "Select an account.")
-        private String accountId;
-
-        @NotNull(message = "Enter an amount.")
-        @DecimalMin(
-                value = "0.01",
-                message = "Amount must be greater than zero."
-        )
-        @Digits(
-                integer = 12,
-                fraction = 2,
-                message = "Use no more than 2 decimal places."
-        )
-        private BigDecimal amount;
-
-        @NotBlank(message = "Idempotency key is required.")
-        @Pattern(
-                regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-"
-                        + "[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
-                        + "[0-9a-fA-F]{12}$",
-                message = "Invalid idempotency key."
-        )
-        private String idempotencyKey;
-
-        public String getAccountId() {
-            return accountId;
-        }
-
-        public void setAccountId(String accountId) {
-            this.accountId = accountId;
-        }
-
-        public BigDecimal getAmount() {
-            return amount;
-        }
-
-        public void setAmount(BigDecimal amount) {
-            this.amount = amount;
-        }
-
-        public String getIdempotencyKey() {
-            return idempotencyKey;
-        }
-
-        public void setIdempotencyKey(String idempotencyKey) {
-            this.idempotencyKey = idempotencyKey;
         }
     }
 }

@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="registration-form">
+    <form class="auth-form"
+          th:action="@{/register}"
+          th:object="${registrationForm}"
+          method="post"
+          hx-post="/register"
+          hx-target="#registration-panel"
+          hx-swap="innerHTML"
+          x-data="registrationForm()"
+          @submit="if (!validate()) $event.preventDefault()">
+
+        <input type="hidden"
+               th:if="${_csrf != null}"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <div class="alert alert-error"
+             role="alert"
+             th:if="${#fields.hasGlobalErrors()}">
+            <p th:each="error : ${#fields.globalErrors()}"
+               th:text="${error}">Registration could not be completed.</p>
+        </div>
+
+        <div class="field">
+            <label for="holderId">Account-holder ID</label>
+            <input id="holderId"
+                   type="text"
+                   th:field="*{holderId}"
+                   autocomplete="off"
+                   placeholder="Paste your account-holder UUID"
+                   required
+                   aria-describedby="holderId-help holderId-error"
+                   th:classappend="${#fields.hasErrors('holderId')} ? ' input-invalid' : ''">
+            <small id="holderId-help" class="field-hint">
+                Use the ID associated with your existing PayFlow account.
+            </small>
+            <small id="holderId-error"
+                   class="field-error"
+                   th:errors="*{holderId}"></small>
+        </div>
+
+        <div class="field">
+            <label for="username">Username</label>
+            <input id="username"
+                   type="text"
+                   th:field="*{username}"
+                   autocomplete="username"
+                   placeholder="Choose a username"
+                   required
+                   th:classappend="${#fields.hasErrors('username')} ? ' input-invalid' : ''">
+            <small class="field-error"
+                   th:errors="*{username}"></small>
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <div class="password-field">
+                <input id="password"
+                       :type="showPassword ? 'text' : 'password'"
+                       th:field="*{password}"
+                       autocomplete="new-password"
+                       placeholder="Create a strong password"
+                       required
+                       @input="checkPassword()"
+                       th:classappend="${#fields.hasErrors('password')} ? ' input-invalid' : ''">
+                <button class="password-toggle"
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                        x-text="showPassword ? 'Hide' : 'Show'">Show</button>
+            </div>
+            <small class="field-hint">Use a long, unique password.</small>
+            <small class="field-error"
+                   th:errors="*{password}"></small>
+        </div>
+
+        <div class="field">
+            <label for="confirmPassword">Confirm password</label>
+            <input id="confirmPassword"
+                   :type="showPassword ? 'text' : 'password'"
+                   th:field="*{confirmPassword}"
+                   autocomplete="new-password"
+                   placeholder="Enter your password again"
+                   required
+                   @input="checkPassword()"
+                   th:classappend="${#fields.hasErrors('confirmPassword')} ? ' input-invalid' : ''">
+            <small class="field-error"
+                   th:errors="*{confirmPassword}"></small>
+            <small class="field-error"
+                   x-show="passwordMismatch"
+                   x-cloak>
+                Passwords do not match.
+            </small>
+        </div>
+
+        <div class="field">
+            <label for="pin">Transaction PIN</label>
+            <div class="password-field">
+                <input id="pin"
+                       :type="showPin ? 'text' : 'password'"
+                       th:field="*{pin}"
+                       inputmode="numeric"
+                       autocomplete="new-password"
+                       placeholder="Create your transaction PIN"
+                       required
+                       maxlength="12"
+                       aria-describedby="pin-help"
+                       th:classappend="${#fields.hasErrors('pin')} ? ' input-invalid' : ''">
+                <button class="password-toggle"
+                        type="button"
+                        @click="showPin = !showPin"
+                        :aria-label="showPin ? 'Hide PIN' : 'Show PIN'"
+                        x-text="showPin ? 'Hide' : 'Show'">Show</button>
+            </div>
+            <small id="pin-help" class="field-hint">
+                Keep your transaction PIN separate from your password.
+            </small>
+            <small class="field-error"
+                   th:errors="*{pin}"></small>
+        </div>
+
+        <button class="auth-submit"
+                type="submit"
+                :disabled="submitting">
+            <span x-text="submitting ? 'Creating login…' : 'Create login'">
+                Create login
+            </span>
+            <span aria-hidden="true">↗</span>
+        </button>
+    </form>
+
+    <script>
+        function registrationForm() {
+            return {
+                showPassword: false,
+                showPin: false,
+                passwordMismatch: false,
+                submitting: false,
+
+                checkPassword() {
+                    const password = document.getElementById('password')?.value ?? '';
+                    const confirmation = document.getElementById('confirmPassword')?.value ?? '';
+                    this.passwordMismatch = confirmation.length > 0 && password !== confirmation;
+                },
+
+                validate() {
+                    this.checkPassword();
+                    if (this.passwordMismatch) {
+                        document.getElementById('confirmPassword')?.focus();
+                        return false;
+                    }
+                    this.submitting = true;
+                    return true;
+                }
+            };
+        }
+    </script>
+</div>
+</body>
+</html>

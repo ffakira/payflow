@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(content, pageTitle)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${pageTitle} + ' | PayFlow'">PayFlow</title>
+
+    <meta name="theme-color" content="#f5f7fb">
+
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/pages/auth.css}">
+
+    <script th:src="@{/js/lib/htmx.min.js}" defer></script>
+    <script th:src="@{/js/lib/alpine.min.js}" defer></script>
+</head>
+<body class="auth-layout">
+<main class="auth-layout__main">
+    <div th:replace="${content}">
+        Page content
+    </div>
+</main>
+</body>
+</html>
