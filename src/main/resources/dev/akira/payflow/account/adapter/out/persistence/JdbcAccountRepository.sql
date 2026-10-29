@@ -2,16 +2,18 @@
 INSERT INTO accounts (
     id,
     holder_id,
+    account_number,
     account_type,
     currency_code,
     status,
     created_at
-) VALUES (?, ?, ?, ?, ?, ?);
+) VALUES (?, ?, ?, ?, ?, ?, ?);
 
 -- name: findById
 SELECT
     id,
     holder_id,
+    account_number,
     account_type,
     currency_code,
     status,
