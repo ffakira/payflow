@@ -89,7 +89,10 @@ public final class VerifyTransactionPinService implements VerifyTransactionPinUs
             return false;
         }
 
-        // a temporary lock no longer blocks verification after expiry
-        return !appUser.lockedUntil().isAfter(now);
+        // If a lock was applied concurrently, do not report success.
+        return appUserRepository.resetFailedLoginAttempts(
+                appUser.username(),
+                now
+        ) > 0;
     }
 }

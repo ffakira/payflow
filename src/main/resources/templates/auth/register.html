@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/auth :: layout(~{::content}, 'Create account')}">
+<body>
+<th:block th:fragment="content">
+    <div class="auth-page" x-data="registrationForm">
+        <div class="auth-shell">
+
+            <!-- Left Side: Showcase -->
+            <aside class="auth-showcase">
+                <div style="position: absolute; inset: 0; opacity: 0.08; pointer-events: none;" aria-hidden="true">
+                    <svg width="100%" height="100%" viewBox="0 0 800 900" fill="none" preserveAspectRatio="none">
+                        <path d="M-20 680C180 540 310 680 470 492S690 308 830 398" stroke="white" stroke-width="1.5" />
+                        <path d="M-50 730C170 590 330 735 500 542S710 360 850 450" stroke="white" stroke-width="1.5" />
+                        <path d="M-80 780C150 640 345 790 530 592S730 410 875 502" stroke="white" stroke-width="1.5" />
+                    </svg>
+                </div>
+
+                <div class="auth-brand">
+                    <div class="brand-mark">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                            <path d="M7 17V7h6.2a3.3 3.3 0 0 1 0 6.6H7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M11 10.3h3.7a2.3 2.3 0 0 1 0 4.7H11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span>PayFlow</span>
+                </div>
+
+                <div class="showcase-content">
+                    <span class="eyebrow">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z" />
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                        Secure account access
+                    </span>
+                    <h1>Your finances,<br>moving forward.</h1>
+                    <p class="showcase-copy">
+                        One secure login to manage your accounts, move money, and stay in control of your finances.
+                    </p>
+                </div>
+
+                <div class="showcase-footer">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z" />
+                        <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    Keep your password and transaction PIN private.
+                </div>
+            </aside>
+
+            <!-- Right Side: Form -->
+            <main class="auth-main">
+
+                <!-- Top Header (Desktop Only) -->
+                <header class="auth-top-header">
+                    <p>Already registered? <a th:href="@{/login}">Sign in</a></p>
+                </header>
+
+                <div class="auth-card auth-card--register">
+
+                    <div class="mobile-brand">
+                        <div class="brand-mark">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                                <path d="M7 17V7h6.2a3.3 3.3 0 0 1 0 6.6H7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M11 10.3h3.7a2.3 2.3 0 0 1 0 4.7H11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <span>PayFlow</span>
+                    </div>
+
+                    <!-- Registration Success State -->
+                    <div x-show="submitted" x-cloak class="success-card">
+                        <div class="success-card__header">
+                            <span class="success-card__icon">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m5 12 4 4L19 6" />
+                                </svg>
+                            </span>
+                            <p class="eyebrow" style="color: #059669; justify-content: center;">Registration complete</p>
+                            <h2>You're all set</h2>
+                            <p>Your secure PayFlow login has been created. You can now sign in and start managing your accounts.</p>
+                        </div>
+                        <div class="success-card__body">
+                            <div class="success-card__info">
+                                <div>
+                                    <p>Your username</p>
+                                    <strong x-text="'@' + username"></strong>
+                                </div>
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+                            </div>
+                            <a th:href="@{/login}" class="auth-submit">
+                                Continue to sign in
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Registration Form (Steps 1-3) -->
+                    <div x-show="!submitted" x-cloak>
+                        <div class="auth-heading" style="margin-bottom: 24px;">
+                            <!-- Progress Bar -->
+                            <div class="progress-bar">
+                                <span class="progress-step" :class="{ 'progress-step--active': step >= 1 }"></span>
+                                <span class="progress-step" :class="{ 'progress-step--active': step >= 2 }"></span>
+                                <span class="progress-step" :class="{ 'progress-step--active': step >= 3 }"></span>
+                            </div>
+
+                            <span class="eyebrow" x-text="'Step ' + step + ' of 3'"></span>
+
+                            <!-- Dynamic Titles -->
+                            <h2 x-show="step === 1">Identify your account</h2>
+                            <h2 x-show="step === 2">Create your login</h2>
+                            <h2 x-show="step === 3">Secure your transactions</h2>
+
+                            <!-- Dynamic Descriptions -->
+                            <p x-show="step === 1">Use the account holder ID provided for your existing PayFlow account.</p>
+                            <p x-show="step === 2">Choose a password to protect access to your account.</p>
+                            <p x-show="step === 3">Set a separate PIN for transaction verification.</p>
+                        </div>
+
+                        <form class="auth-form" @submit.prevent="nextStep">
+
+                            <!-- STEP 1 -->
+                            <div x-show="step === 1" class="form-step-content">
+                                <div class="field">
+                                    <label for="holderId">Account holder ID</label>
+                                    <input type="text" id="holderId" x-model="holderId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off">
+                                    <p class="field-hint">Use the ID associated with your existing PayFlow account.</p>
+                                </div>
+                                <div class="field">
+                                    <label for="username">Choose a username</label>
+                                    <input type="text" id="username" x-model="username" placeholder="alex.morgan" autocomplete="username" minlength="3" maxlength="50">
+                                    <p class="field-hint">You'll use this username to sign in.</p>
+                                </div>
+                            </div>
+
+                            <!-- STEP 2 -->
+                            <div x-show="step === 2" class="form-step-content">
+                                <div class="field">
+                                    <label for="password">Password</label>
+                                    <div class="password-field">
+                                        <input :type="showPassword ? 'text' : 'password'" id="password" x-model="password" placeholder="At least 8 characters" autocomplete="new-password">
+                                        <button type="button" class="password-toggle" @click="showPassword = !showPassword">
+                                            <span x-text="showPassword ? 'Hide' : 'Show'"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="confirmPassword">Confirm password</label>
+                                    <input type="password" id="confirmPassword" x-model="confirmPassword" placeholder="Enter your password again" autocomplete="new-password">
+                                </div>
+                                <div class="alert alert-info" style="margin-bottom: 0; margin-top: 8px;">
+                                    <p>Your password protects sign-in access. Your transaction PIN will be set separately.</p>
+                                </div>
+                            </div>
+
+                            <!-- STEP 3 -->
+                            <div x-show="step === 3" class="form-step-content">
+                                <div class="pin-card">
+                                    <div class="pin-card__header">
+                                        <div class="pin-card__title">
+                                            <span class="pin-card__icon">
+                                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z" />
+                                                    <path d="m9 12 2 2 4-4" />
+                                                </svg>
+                                            </span>
+                                            <div>
+                                                <p x-text="pinPhase === 'create' ? 'Create your PIN' : 'Confirm your PIN'"></p>
+                                                <span x-text="pinPhase === 'create' ? 'Choose a memorable 6-digit code' : 'Enter the same code once more'"></span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="pin-card__toggle" @click="showPin = !showPin" x-text="showPin ? 'Hide' : 'Show'"></button>
+                                    </div>
+
+                                    <!-- PIN Input Component -->
+                                    <div class="pin-input-wrapper" @click="$refs.pinInput.focus()">
+                                        <input type="text"
+                                               x-ref="pinInput"
+                                               class="pin-hidden-input"
+                                               maxlength="6"
+                                               inputmode="numeric"
+                                               pattern="[0-9]{6}"
+                                               :value="pinPhase === 'create' ? pin : confirmPin"
+                                               @input="handlePinInput($event, pinPhase === 'create' ? 'pin' : 'confirmPin')">
+
+                                        <div class="pin-visual-boxes">
+                                            <template x-for="i in 6">
+                                                <div class="pin-box"
+                                                     :class="{
+                                                         'pin-box--active': (pinPhase === 'create' ? pin.length : confirmPin.length) === i - 1,
+                                                         'pin-box--filled': (pinPhase === 'create' ? pin.length : confirmPin.length) >= i
+                                                     }">
+                                                    <span x-show="(pinPhase === 'create' ? pin.length : confirmPin.length) >= i"
+                                                          x-text="showPin ? (pinPhase === 'create' ? pin[i-1] : confirmPin[i-1]) : '•'"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="pin-card__footer">
+                                        <div class="pin-status" :class="{ 'pin-status--valid': pinPhase === 'confirm' || pin.length === 6 }">
+                                            <span class="pin-status__icon">
+                                                <svg x-show="pinPhase === 'confirm' || pin.length === 6" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 8 3 3 7-7" /></svg>
+                                            </span>
+                                            Exactly 6 digits
+                                        </div>
+                                        <span class="pin-card__step" x-text="pinPhase === 'create' ? '1 of 2' : '2 of 2'"></span>
+                                    </div>
+                                </div>
+                                <p class="field-hint" style="margin-top: 12px; display: flex; gap: 8px;">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" style="flex-shrink:0;"><path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z" /></svg>
+                                    This PIN approves payments and transfers. PayFlow support will never ask for it.
+                                </p>
+                            </div>
+
+                            <!-- Error Alert -->
+                            <div class="alert alert-error" x-show="error" x-cloak style="margin-bottom: 0;">
+                                <p x-text="error"></p>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="auth-actions">
+                                <button type="button" class="button button--secondary" x-show="step > 1" @click="prevStep" style="height: 3.5rem; border-radius: 12px;">
+                                    Back
+                                </button>
+                                <button type="submit" class="auth-submit" style="margin-top: 0;">
+                                    <span x-text="step === 3 ? (pinPhase === 'create' ? 'Confirm PIN' : 'Create login') : 'Continue'"></span>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Alpine.js Registration Component -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('registrationForm', () => ({
+                step: 1,
+                holderId: '',
+                username: '',
+                password: '',
+                confirmPassword: '',
+                pin: '',
+                confirmPin: '',
+                pinPhase: 'create', // 'create' or 'confirm'
+                showPassword: false,
+                showPin: false,
+                error: '',
+                submitted: false,
+
+                nextStep() {
+                    this.error = '';
+
+                    if (this.step === 1) {
+                        if (!this.holderId.trim() || !this.username.trim()) {
+                            this.error = 'Enter your account holder ID and choose a username.';
+                            return;
+                        }
+                        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(this.holderId.trim())) {
+                            this.error = 'Enter a valid account holder ID in UUID format.';
+                            return;
+                        }
+                        if (this.username.trim().length < 3) {
+                            this.error = 'Your username must contain at least 3 characters.';
+                            return;
+                        }
+                        this.step = 2;
+                    }
+                    else if (this.step === 2) {
+                        if (this.password.length < 8) {
+                            this.error = 'Your password must contain at least 8 characters.';
+                            return;
+                        }
+                        if (this.password !== this.confirmPassword) {
+                            this.error = 'Your passwords do not match.';
+                            return;
+                        }
+                        this.step = 3;
+                    }
+                    else if (this.step === 3) {
+                        if (this.pinPhase === 'create') {
+                            if (this.pin.length !== 6) {
+                                this.error = 'Enter all 6 digits to continue.';
+                                return;
+                            }
+                            this.confirmPin = '';
+                            this.pinPhase = 'confirm';
+                            this.$nextTick(() => this.$refs.pinInput.focus());
+                        } else {
+                            if (this.pin !== this.confirmPin) {
+                                this.error = 'The PINs don’t match. Please try again.';
+                                this.confirmPin = '';
+                                this.$nextTick(() => this.$refs.pinInput.focus());
+                                return;
+                            }
+                            this.submitRegistration();
+                        }
+                    }
+                },
+
+                prevStep() {
+                    this.error = '';
+                    if (this.step === 3 && this.pinPhase === 'confirm') {
+                        this.pinPhase = 'create';
+                        this.confirmPin = '';
+                    } else {
+                        this.step--;
+                    }
+                },
+
+                handlePinInput(e, field) {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    if (field === 'pin') this.pin = val;
+                    if (field === 'confirmPin') this.confirmPin = val;
+                },
+
+                submitRegistration() {
+                    // Real implementation:
+                    // In a real app, you'd use `fetch()` or HTMX here to POST the data.
+                    // Since we are mocking the prototype, we simulate a delay.
+                    setTimeout(() => {
+                        this.submitted = true;
+                    }, 400);
+                }
+            }));
+        });
+    </script>
+</th:block>
+</body>
+</html>
