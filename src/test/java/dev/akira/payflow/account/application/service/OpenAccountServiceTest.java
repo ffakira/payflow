@@ -7,6 +7,7 @@ import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountStatus;
 import dev.akira.payflow.account.domain.AccountType;
 import dev.akira.payflow.account.domain.holder.AccountHolder;
+import dev.akira.payflow.account.domain.holder.AccountHolderId;
 import dev.akira.payflow.account.domain.holder.AccountHolderStatus;
 import dev.akira.payflow.account.domain.holder.AccountHolderType;
 import dev.akira.payflow.common.domain.money.CurrencyCode;
@@ -27,6 +28,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 class OpenAccountServiceTest {
 
@@ -165,6 +167,13 @@ class OpenAccountServiceTest {
 
             saved.add(holder);
             return holder;
+        }
+
+        @Override
+        public Optional<AccountHolder> findById(AccountHolderId id) {
+            return saved.stream()
+                    .filter(holder -> holder.id().equals(id))
+                    .findFirst();
         }
     }
 

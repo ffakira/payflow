@@ -6,6 +6,7 @@ import dev.akira.payflow.account.application.port.out.AccountRepository;
 import dev.akira.payflow.account.domain.Account;
 import dev.akira.payflow.account.domain.AccountId;
 import dev.akira.payflow.account.domain.AccountType;
+import dev.akira.payflow.account.domain.holder.AccountHolderId;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -70,6 +71,12 @@ public final class InMemoryAccountRepository
                 : Optional.empty();
 
         return new AccountPage(items, nextCursor);
+    }
+
+    @Override
+    public boolean existsByHolderId(AccountHolderId holderId) {
+        return accounts.values().stream()
+                .anyMatch(account -> account.holderId().equals(holderId));
     }
 
     private static boolean isAfterCursor(Account account, AccountCursor cursor) {
