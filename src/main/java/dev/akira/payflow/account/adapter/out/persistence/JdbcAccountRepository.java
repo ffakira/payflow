@@ -6,11 +6,13 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import dev.akira.payflow.account.application.port.out.AccountCursor;
 import dev.akira.payflow.account.application.port.out.AccountPage;
+import dev.akira.payflow.common.adapter.out.persistence.SqlLoader;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -26,87 +28,10 @@ import dev.akira.payflow.common.domain.money.CurrencyCode;
 @Repository
 public class JdbcAccountRepository implements AccountRepository {
 
+    private static final Map<String, String> SQL =
+            SqlLoader.loadQueries(JdbcAccountRepository.class);
+
     private static final int MAX_PAGE_SIZE = 100;
-
-    private static final String INSERT_SQL = """
-        INSERT INTO accounts (
-            id,
-            holder_id,
-            account_number,
-            account_type,
-            currency_code,
-            status,
-            created_at
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """;
-
-    private static final String FIND_BY_ID_SQL = """
-        SELECT
-            id,
-            holder_id,
-            account_number,
-            account_type,
-            currency_code,
-            status,
-            created_at
-        FROM accounts
-        WHERE id = ?
-    """;
-
-    private static final String FIND_BY_ID_FOR_UPDATE_SQL = """
-        SELECT
-            id,
-            holder_id,
-            account_number,
-            account_type,
-            currency_code,
-            status,
-            created_at
-        FROM accounts
-        WHERE id = ?
-        FOR UPDATE
-    """;
-
-    private static final String FIND_CUSTOMER_ACCOUNTS_SQL = """
-        SELECT
-            id,
-            holder_id,
-            account_number,
-            account_type,
-            currency_code,
-            status,
-            created_at
-        FROM accounts
-        WHERE account_type = 'CUSTOMER'
-        ORDER BY created_at DESC, id DESC
-        LIMIT ?
-    """;
-
-    private static final String FIND_CUSTOMER_ACCOUNTS_AFTER_SQL = """
-        SELECT
-            id,
-            holder_id,
-            account_number,
-            account_type,
-            currency_code,
-            status,
-            created_at
-        FROM accounts
-        WHERE account_type = 'CUSTOMER'
-            AND (created_at, id) < (?, ?)
-        ORDER BY created_at DESC, id DESC
-        LIMIT ?
-    """;
-
-    private static final String EXISTS_BY_HOLDER_ID_SQL = """
-        SELECT EXISTS (
-            SELECT 1
-            FROM accounts
-            WHERE holder_id = ?
-                AND account_type = 'CUSTOMER'
-        )
-    """;
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -119,7 +44,7 @@ public class JdbcAccountRepository implements AccountRepository {
         Objects.requireNonNull(account, "Account cannot be null");
 
         jdbcTemplate.update(
-            INSERT_SQL,
+            SQL.get("insert"),
             account.id().value(),
             account.holderId().value(),
             account.accountNumber(),
@@ -142,7 +67,7 @@ public class JdbcAccountRepository implements AccountRepository {
         try {
             return Optional.ofNullable(
                 jdbcTemplate.queryForObject(
-                    FIND_BY_ID_SQL,
+                    SQL.get("findById"),
                     (rs, rowNum) -> mapAccount(rs),
                     id.value()
                 )
@@ -159,7 +84,7 @@ public class JdbcAccountRepository implements AccountRepository {
         try {
             return Optional.ofNullable(
                 jdbcTemplate.queryForObject(
-                    FIND_BY_ID_FOR_UPDATE_SQL,
+                    SQL.get("findByIdForUpdate"),
                     (rs, rowNum) -> mapAccount(rs),
                     id.value()
                 )
@@ -181,14 +106,14 @@ public class JdbcAccountRepository implements AccountRepository {
 
         List<Account> fetched = after
                 .map(cursor -> jdbcTemplate.query(
-                        FIND_CUSTOMER_ACCOUNTS_AFTER_SQL,
+                        SQL.get("findCustomerAccountsAfter"),
                         (rs, rowNum) -> mapAccount(rs),
                         OffsetDateTime.ofInstant(cursor.createdAt(), ZoneOffset.UTC),
                         cursor.id().value(),
                         fetchLimit
                 ))
                 .orElseGet(() -> jdbcTemplate.query(
-                        FIND_CUSTOMER_ACCOUNTS_SQL,
+                        SQL.get("findCustomerAccounts"),
                         (rs, rowNum) -> mapAccount(rs),
                         fetchLimit
                 ));
@@ -217,7 +142,7 @@ public class JdbcAccountRepository implements AccountRepository {
         Objects.requireNonNull(holderId, "Account holder ID must not be null");
 
         Boolean exists = jdbcTemplate.queryForObject(
-                EXISTS_BY_HOLDER_ID_SQL,
+                SQL.get("existsByHolderId"),
                 Boolean.class,
                 holderId.value()
         );

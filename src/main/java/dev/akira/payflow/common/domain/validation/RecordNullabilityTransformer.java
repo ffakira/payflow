@@ -1,12 +1,4 @@
-
 package dev.akira.payflow.common.domain.validation;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -25,6 +17,13 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.RecordComponentNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Injects runtime null checks into compiled Java record constructors.

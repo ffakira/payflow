@@ -1,8 +1,8 @@
 package dev.akira.payflow.auth.adapter.out.security;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Objects;
+import dev.akira.payflow.appuser.application.port.out.AppUserRepository;
+import dev.akira.payflow.appuser.domain.AppUser;
+import dev.akira.payflow.appuser.domain.AppUserStatus;
 
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,9 +10,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import dev.akira.payflow.appuser.application.port.out.AppUserRepository;
-import dev.akira.payflow.appuser.domain.AppUser;
-import dev.akira.payflow.appuser.domain.AppUserStatus;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Objects;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {

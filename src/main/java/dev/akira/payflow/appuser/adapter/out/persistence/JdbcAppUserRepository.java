@@ -1,4 +1,3 @@
-
 package dev.akira.payflow.appuser.adapter.out.persistence;
 
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
@@ -7,6 +6,7 @@ import dev.akira.payflow.appuser.domain.AppUser;
 import dev.akira.payflow.appuser.domain.AppUserId;
 import dev.akira.payflow.appuser.domain.AppUserStatus;
 import dev.akira.payflow.common.adapter.out.persistence.SqlLoader;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;

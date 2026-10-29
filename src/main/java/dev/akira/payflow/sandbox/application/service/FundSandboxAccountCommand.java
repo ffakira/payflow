@@ -1,9 +1,9 @@
 package dev.akira.payflow.sandbox.application.service;
 
-import java.util.Objects;
-
 import dev.akira.payflow.account.domain.AccountId;
 import dev.akira.payflow.common.domain.money.Money;
+
+import java.util.Objects;
 
 public record FundSandboxAccountCommand(
     AccountId accountId,

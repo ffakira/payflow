@@ -14,6 +14,14 @@ public interface AccountRepository {
 
     Optional<Account> findByIdForUpdate(AccountId id);
 
+    /**
+     * Returns a page of customer accounts ordered by creation time, descending.
+     *
+     * @param pageSize maximum number of accounts to return
+     * @param after optional cursor; empty when requesting he first page
+     * @return the requested page and an optional cursor for the next page
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     AccountPage findCustomerAccounts(int pageSize, Optional<AccountCursor> after);
 
     boolean existsByHolderId(AccountHolderId holderId);

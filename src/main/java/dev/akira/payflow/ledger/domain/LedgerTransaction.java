@@ -1,5 +1,7 @@
 package dev.akira.payflow.ledger.domain;
 
+import dev.akira.payflow.common.domain.money.CurrencyCode;
+
 import java.math.BigInteger;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -7,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
-import dev.akira.payflow.common.domain.money.CurrencyCode;
 
 public record LedgerTransaction(
     LedgerTransactionId id,

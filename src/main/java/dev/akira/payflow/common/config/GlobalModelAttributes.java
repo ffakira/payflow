@@ -1,9 +1,9 @@
 package dev.akira.payflow.common.config;
 
+import dev.akira.payflow.config.PayflowProperties;
+
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import dev.akira.payflow.config.PayflowProperties;
 
 @ControllerAdvice
 public class GlobalModelAttributes {

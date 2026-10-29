@@ -1,10 +1,10 @@
 package dev.akira.payflow.ledger.domain;
 
-import java.util.Objects;
-import java.util.UUID;
-
 import dev.akira.payflow.account.domain.AccountId;
 import dev.akira.payflow.common.domain.money.Money;
+
+import java.util.Objects;
+import java.util.UUID;
 
 public record LedgerEntry(
     UUID id,

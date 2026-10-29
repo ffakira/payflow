@@ -1,8 +1,8 @@
 package dev.akira.payflow.account.application.service;
 
-import java.security.SecureRandom;
-
 import org.springframework.stereotype.Component;
+
+import java.security.SecureRandom;
 
 @Component
 public class RandomAccountNumberGenerator {

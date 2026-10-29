@@ -1,8 +1,8 @@
 package dev.akira.payflow.transfer.application.port.out;
 
-import java.util.Objects;
-
 import dev.akira.payflow.ledger.domain.LedgerTransactionId;
+
+import java.util.Objects;
 
 public record TransferIdempotencyRecord(
     String requestHash,

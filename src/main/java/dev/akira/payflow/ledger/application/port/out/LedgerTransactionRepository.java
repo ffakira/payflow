@@ -1,9 +1,9 @@
 package dev.akira.payflow.ledger.application.port.out;
 
-import java.util.Optional;
-
 import dev.akira.payflow.ledger.domain.LedgerTransaction;
 import dev.akira.payflow.ledger.domain.LedgerTransactionId;
+
+import java.util.Optional;
 
 public interface LedgerTransactionRepository {
 

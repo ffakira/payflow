@@ -1,28 +1,34 @@
 package dev.akira.payflow.account.domain;
 
-import java.time.Instant;
-import java.util.Objects;
-
 import dev.akira.payflow.account.domain.holder.AccountHolderId;
 import dev.akira.payflow.common.domain.money.CurrencyCode;
+import dev.akira.payflow.common.domain.validation.NotNull;
+
+import java.time.Instant;
 
 public record Account(
+        @NotNull(message = "Account ID must not be null")
         AccountId id,
+
+        @NotNull(message = "Holder ID must not be null")
         AccountHolderId holderId,
+
+        @NotNull(message = "Account number must not be null")
         String accountNumber,
+
+        @NotNull(message = "Account type must not be null")
         AccountType type,
+
+        @NotNull(message = "Currency must not be null")
         CurrencyCode currency,
+
+        @NotNull(message = "Status must not be null")
         AccountStatus status,
+
+        @NotNull(message = "Creation timestamp must not be null")
         Instant createdAt) {
 
     public Account {
-        Objects.requireNonNull(id, "Account ID must not be null");
-        Objects.requireNonNull(holderId, "Holder ID must not be null");
-        Objects.requireNonNull(type, "Account type must not be null");
-        Objects.requireNonNull(currency, "Currency must not be null");
-        Objects.requireNonNull(status, "Status must not be null");
-        Objects.requireNonNull(createdAt, "Creation timestamp must not be null");
-
         if (accountNumber == null || accountNumber.isBlank()) {
             throw new IllegalArgumentException(
                     "Account number must not be blank");
